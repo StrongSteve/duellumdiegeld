@@ -13,6 +13,18 @@ const stats = ref<DashboardStats | null>(null)
 const isLoading = ref(true)
 const error = ref<string | null>(null)
 
+const isExporting = ref(false)
+const isImporting = ref(false)
+const importResult = ref<{
+  success: boolean
+  imported: number
+  skipped: number
+  errors: string[]
+  message: string
+} | null>(null)
+const showImportModal = ref(false)
+const fileInput = ref<HTMLInputElement | null>(null)
+
 onMounted(async () => {
   await loadStats()
 })
@@ -33,6 +45,65 @@ async function loadStats() {
 function logout() {
   authStore.logout()
   router.push('/admin/login')
+}
+
+async function handleExport() {
+  isExporting.value = true
+  error.value = null
+
+  try {
+    await adminApi.exportQuestions()
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Export fehlgeschlagen'
+  } finally {
+    isExporting.value = false
+  }
+}
+
+function openImportModal() {
+  showImportModal.value = true
+  importResult.value = null
+}
+
+function closeImportModal() {
+  showImportModal.value = false
+  importResult.value = null
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
+}
+
+async function handleFileSelect(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+
+  if (!file) return
+
+  isImporting.value = true
+  error.value = null
+  importResult.value = null
+
+  try {
+    const text = await file.text()
+    const data = JSON.parse(text)
+
+    if (!data.questions || !Array.isArray(data.questions)) {
+      throw new Error('Ungültiges Dateiformat: "questions" Array fehlt')
+    }
+
+    importResult.value = await adminApi.importQuestions(data, true)
+
+    // Reload stats after import
+    await loadStats()
+  } catch (err) {
+    if (err instanceof SyntaxError) {
+      error.value = 'Ungültige JSON-Datei'
+    } else {
+      error.value = err instanceof Error ? err.message : 'Import fehlgeschlagen'
+    }
+  } finally {
+    isImporting.value = false
+  }
 }
 </script>
 
@@ -162,7 +233,184 @@ function logout() {
             </RouterLink>
           </div>
         </div>
+
+        <!-- Import/Export Section -->
+        <div class="card p-6 mt-6">
+          <h3 class="text-lg font-semibold text-white mb-4">Datenverwaltung</h3>
+          <p class="text-slate-400 text-sm mb-4">
+            Exportiere alle Fragen als JSON-Datei oder importiere Fragen aus einer Backup-Datei.
+            Beim Import werden Duplikate (basierend auf dem Fragetext) automatisch übersprungen.
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <CTAButton
+              variant="secondary"
+              size="md"
+              :disabled="isExporting"
+              @click="handleExport"
+            >
+              <span v-if="isExporting">Exportiere...</span>
+              <span v-else>Fragen exportieren</span>
+            </CTAButton>
+            <CTAButton
+              variant="secondary"
+              size="md"
+              @click="openImportModal"
+            >
+              Fragen importieren
+            </CTAButton>
+          </div>
+        </div>
       </div>
     </main>
+
+    <!-- Import Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="showImportModal" class="modal-overlay" @click.self="closeImportModal">
+          <div class="modal-container">
+            <div class="modal-header">
+              <h2 class="text-xl font-semibold text-white">Fragen importieren</h2>
+              <button class="text-slate-400 hover:text-white" @click="closeImportModal">
+                &times;
+              </button>
+            </div>
+
+            <div class="modal-content">
+              <p class="text-slate-400 text-sm mb-4">
+                Wähle eine JSON-Datei aus, die mit der Export-Funktion erstellt wurde.
+                Duplikate werden automatisch übersprungen.
+              </p>
+
+              <div class="file-upload-area">
+                <input
+                  ref="fileInput"
+                  type="file"
+                  accept=".json"
+                  class="hidden"
+                  @change="handleFileSelect"
+                />
+                <CTAButton
+                  variant="gold"
+                  size="md"
+                  :disabled="isImporting"
+                  @click="fileInput?.click()"
+                >
+                  <span v-if="isImporting">Importiere...</span>
+                  <span v-else>JSON-Datei auswählen</span>
+                </CTAButton>
+              </div>
+
+              <!-- Import Result -->
+              <div v-if="importResult" class="import-result mt-4">
+                <div
+                  class="p-4 rounded-lg"
+                  :class="importResult.success ? 'bg-success-500/20 border border-success-500/30' : 'bg-danger-500/20 border border-danger-500/30'"
+                >
+                  <p class="font-semibold" :class="importResult.success ? 'text-success-400' : 'text-danger-400'">
+                    {{ importResult.message }}
+                  </p>
+                  <ul class="text-sm text-slate-300 mt-2 space-y-1">
+                    <li>Importiert: {{ importResult.imported }}</li>
+                    <li>Übersprungen (Duplikate): {{ importResult.skipped }}</li>
+                  </ul>
+                  <div v-if="importResult.errors.length > 0" class="mt-3">
+                    <p class="text-sm text-danger-400 font-medium">Fehler:</p>
+                    <ul class="text-xs text-slate-400 mt-1 space-y-1">
+                      <li v-for="(err, index) in importResult.errors" :key="index">{{ err }}</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Error -->
+              <div v-if="error && showImportModal" class="mt-4 p-4 bg-danger-500/20 border border-danger-500/30 rounded-lg">
+                <p class="text-danger-400 text-sm">{{ error }}</p>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <CTAButton variant="secondary" size="sm" @click="closeImportModal">
+                Schließen
+              </CTAButton>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
+
+<style scoped>
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+}
+
+.modal-container {
+  background: #1e293b;
+  border-radius: 1rem;
+  max-width: 480px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header button {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.modal-content {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.file-upload-area {
+  text-align: center;
+  padding: 2rem;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Transitions */
+.modal-enter-active,
+.modal-leave-active {
+  transition: all 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from .modal-container,
+.modal-leave-to .modal-container {
+  transform: scale(0.95);
+}
+</style>

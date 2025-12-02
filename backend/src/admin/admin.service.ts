@@ -219,4 +219,116 @@ export class AdminService {
 
     return { success: true, message: 'Frage erfolgreich gelöscht' };
   }
+
+  async exportQuestions() {
+    const questions = await this.prisma.question.findMany({
+      include: {
+        hints: {
+          orderBy: { orderIndex: 'asc' },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    // Transform to export format (without IDs for portability)
+    const exportData = {
+      exportedAt: new Date().toISOString(),
+      version: '1.0',
+      questions: questions.map((q) => ({
+        questionText: q.questionText,
+        category: q.category,
+        answerValue: q.answerValue,
+        answerUnit: q.answerUnit,
+        explanation: q.explanation,
+        sourceUrl: q.sourceUrl,
+        contributorName: q.contributorName,
+        status: q.status,
+        hints: q.hints.map((h) => ({
+          orderIndex: h.orderIndex,
+          hintText: h.hintText,
+        })),
+      })),
+    };
+
+    return exportData;
+  }
+
+  async importQuestions(
+    importData: {
+      questions: Array<{
+        questionText: string;
+        category: Category;
+        answerValue: number;
+        answerUnit?: string;
+        explanation?: string;
+        sourceUrl?: string;
+        contributorName?: string;
+        status?: QuestionStatus;
+        hints: Array<{ orderIndex: number; hintText: string }>;
+      }>;
+    },
+    skipDuplicates: boolean = true,
+  ) {
+    let imported = 0;
+    let skipped = 0;
+    const errors: string[] = [];
+
+    for (const q of importData.questions) {
+      try {
+        // Check for duplicate by questionText (case-insensitive)
+        const existing = await this.prisma.question.findFirst({
+          where: {
+            questionText: {
+              equals: q.questionText,
+              mode: 'insensitive',
+            },
+          },
+        });
+
+        if (existing) {
+          if (skipDuplicates) {
+            skipped++;
+            continue;
+          } else {
+            errors.push(`Duplikat übersprungen: "${q.questionText.substring(0, 50)}..."`);
+            continue;
+          }
+        }
+
+        // Create question with hints
+        await this.prisma.question.create({
+          data: {
+            questionText: q.questionText,
+            category: q.category || Category.MISC,
+            answerValue: q.answerValue,
+            answerUnit: q.answerUnit,
+            explanation: q.explanation,
+            sourceUrl: q.sourceUrl,
+            contributorName: q.contributorName,
+            status: q.status || QuestionStatus.APPROVED,
+            hints: {
+              create: q.hints.map((h) => ({
+                orderIndex: h.orderIndex,
+                hintText: h.hintText,
+              })),
+            },
+          },
+        });
+
+        imported++;
+      } catch (err) {
+        errors.push(
+          `Fehler bei "${q.questionText.substring(0, 30)}...": ${err instanceof Error ? err.message : 'Unbekannter Fehler'}`,
+        );
+      }
+    }
+
+    return {
+      success: true,
+      imported,
+      skipped,
+      errors,
+      message: `Import abgeschlossen: ${imported} importiert, ${skipped} übersprungen (Duplikate)`,
+    };
+  }
 }

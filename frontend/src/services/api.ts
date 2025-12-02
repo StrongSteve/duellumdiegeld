@@ -121,7 +121,42 @@ export const adminApi = {
     }),
 
   deleteQuestion: (id: string): Promise<{ success: boolean; message: string }> =>
-    fetchApi(`/admin/questions/${id}`, { method: 'DELETE' })
+    fetchApi(`/admin/questions/${id}`, { method: 'DELETE' }),
+
+  exportQuestions: async (): Promise<void> => {
+    const token = localStorage.getItem('adminToken')
+    const response = await fetch(`${API_BASE}/admin/export`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    if (!response.ok) {
+      throw new ApiError(response.status, 'Export fehlgeschlagen')
+    }
+
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `questions-export-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+  },
+
+  importQuestions: (data: { questions: unknown[] }, skipDuplicates = true): Promise<{
+    success: boolean
+    imported: number
+    skipped: number
+    errors: string[]
+    message: string
+  }> =>
+    fetchApi(`/admin/import?skipDuplicates=${skipDuplicates}`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
 }
 
 // Game API
