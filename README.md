@@ -1,131 +1,146 @@
 # Das Duell um die Geld
 
-Ein digitaler Spielleiter für das analoge Quiz/Poker-Kartenspiel. Die App wird auf einem Tablet in der Mitte des Tisches platziert und führt die Spieler Schritt für Schritt durch jede Runde.
+> **Legal Disclaimer / Copyright Notice**
+>
+> **"Das Duell um die Geld"** is a TV show by **ProSieben** and **Joyn**, hosted by Joko Winterscheidt and Klaas Heufer-Umlauf.
+>
+> © Seven.One Entertainment Group GmbH | Produced by Florida Entertainment GmbH
+>
+> This web app is a **Proof of Concept (POC)** created to demonstrate the capabilities of **AI-assisted software development** using **Claude Code**. It is a **non-commercial fan project** with no profit intent. All rights to the original format, name, and concept remain with the rightful owners.
+>
+> [Watch the original on Joyn](https://www.joyn.de/serien/das-duell-um-die-geld)
+
+---
+
+A digital game facilitator for the analog quiz/poker card game. The app is placed on a tablet in the middle of the table and guides players step by step through each round.
 
 ## Features
 
-### Spielmodul
-- **Geführter Spielablauf**: Schritt-für-Schritt durch jede Runde
-- **State Machine**: Klare Zustandsübergänge (Frage -> Schätzen -> Einsatzrunden mit Hinweisen -> Antwort -> Zusammenfassung)
-- **Poker-Tisch Visualisierung**: Spielerordnung mit Small/Big Blind Anzeige
-- **Tablet-optimiert**: Große Schrift, große Buttons, hoher Kontrast
-- **Offline-Spielgeld**: Spieler verwalten ihr Geld auf Papier
-- **Session-Persistenz**: Übersteht Browser-Reloads
-- **PWA-Support**: Installierbar als App auf mobilen Geräten
-- **Cookie-basierte Fragenverfolgung**: Vermeidet Wiederholung von Fragen
+### Game Module
+- **Guided gameplay**: Step-by-step through each round
+- **State Machine**: Clear state transitions (Question -> Guessing -> Betting rounds with hints -> Answer -> Summary)
+- **Poker table visualization**: Player order with Small/Big Blind display
+- **Tablet-optimized**: Large fonts, big buttons, high contrast
+- **Offline play money**: Players manage their money on paper
+- **Session persistence**: Survives browser reloads
+- **PWA support**: Installable as app on mobile devices
+- **Cookie-based question tracking**: Avoids question repetition
 
-### Öffentliche Frageneinreichung
-- Formular mit Kategorie, Frage, numerische Antwort, Hinweise, Quelle
-- Math-Captcha geschützt (keine externen Services)
-- Fragen landen als "ausstehend" in der Datenbank
+### Public Question Submission
+- Form with category, question, numeric answer, hints, source
+- Math captcha protected (no external services)
+- Questions are marked as "pending" in the database
 
-### Admin-Moderation
-- Dashboard mit Statistiken
-- Fragen genehmigen/ablehnen/bearbeiten
-- Filter und Suche
-- JWT-Authentifizierung
-- Rate-Limited Login mit exponentiellem Backoff
+### Admin Moderation
+- Dashboard with statistics
+- Approve/reject/edit questions
+- Filter and search
+- JWT authentication
+- Rate-limited login with exponential backoff
+- Import/Export questions as JSON (with duplicate detection)
 
 ## Tech Stack
 
-| Komponente | Technologie |
-|------------|-------------|
+| Component | Technology |
+|-----------|------------|
 | Frontend | Vue 3, Vite, TailwindCSS, Pinia, Vue Router, PWA |
 | Backend | Node.js, NestJS, Prisma ORM |
-| Datenbank | PostgreSQL |
-| Auth | JWT (JSON Web Tokens) mit Rate Limiting |
-| Security | Math-Captcha (lokal), bcrypt (12 rounds), exponentielles Login-Backoff |
+| Database | PostgreSQL |
+| Auth | JWT (JSON Web Tokens) with Rate Limiting |
+| Security | Math Captcha (local), bcrypt (12 rounds), exponential login backoff |
 | DevOps | Docker, docker-compose |
 
-## Kategorien
+## Categories
 
-- Wissenschaft, Geschichte, Geografie, Sport, Technologie
-- Popkultur, Alltag, Tiere, Essen & Trinken
-- Gesundheit, Musik, Astronomie, Sonstiges
+- Science, History, Geography, Sports, Technology
+- Pop Culture, Everyday Life, Animals, Food & Drink
+- Health, Music, Astronomy, Miscellaneous
 
 ## REST API
 
-### Öffentliche Endpunkte
+### Public Endpoints
 
-| Methode | Endpunkt | Beschreibung |
-|---------|----------|--------------|
-| POST | `/api/questions/submit` | Frage einreichen (mit Captcha) |
-| GET | `/api/questions/random` | Zufällige genehmigte Frage |
-| GET | `/api/questions/count` | Anzahl genehmigter Fragen |
-| GET | `/api/questions/captcha` | Math-Captcha Challenge |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/questions/submit` | Submit question (with captcha) |
+| GET | `/api/questions/random` | Random approved question |
+| GET | `/api/questions/count` | Count of approved questions |
+| GET | `/api/questions/captcha` | Math captcha challenge |
 
-### Auth Endpunkte
+### Auth Endpoints
 
-| Methode | Endpunkt | Beschreibung |
-|---------|----------|--------------|
-| POST | `/api/auth/login` | Admin-Login (rate-limited) |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/login` | Admin login (rate-limited) |
 
-### Admin Endpunkte (Auth erforderlich)
+### Admin Endpoints (Auth required)
 
-| Methode | Endpunkt | Beschreibung |
-|---------|----------|--------------|
-| GET | `/api/admin/dashboard` | Dashboard-Statistiken |
-| GET | `/api/admin/questions/pending` | Ausstehende Fragen |
-| GET | `/api/admin/questions` | Alle Fragen (mit Filtern) |
-| GET | `/api/admin/questions/:id` | Einzelne Frage |
-| POST | `/api/admin/questions/:id/approve` | Frage genehmigen |
-| POST | `/api/admin/questions/:id/reject` | Frage ablehnen |
-| PUT | `/api/admin/questions/:id` | Frage bearbeiten |
-| DELETE | `/api/admin/questions/:id` | Frage löschen |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/admin/dashboard` | Dashboard statistics |
+| GET | `/api/admin/questions/pending` | Pending questions |
+| GET | `/api/admin/questions` | All questions (with filters) |
+| GET | `/api/admin/questions/:id` | Single question |
+| POST | `/api/admin/questions/:id/approve` | Approve question |
+| POST | `/api/admin/questions/:id/reject` | Reject question |
+| PUT | `/api/admin/questions/:id` | Edit question |
+| DELETE | `/api/admin/questions/:id` | Delete question |
+| GET | `/api/admin/export` | Export all questions as JSON |
+| POST | `/api/admin/import` | Import questions from JSON |
 
-### Game Endpunkte
+### Game Endpoints
 
-| Methode | Endpunkt | Beschreibung |
-|---------|----------|--------------|
-| POST | `/api/game/session` | Neue Spielsitzung erstellen |
-| GET | `/api/game/session/:id` | Spielsitzung abrufen |
-| PUT | `/api/game/session/:id` | Spielsitzung aktualisieren |
-| GET | `/api/game/session/:id/next-question` | Nächste Frage |
-| POST | `/api/game/session/:id/end` | Spielsitzung beenden |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/game/session` | Create new game session |
+| GET | `/api/game/session/:id` | Get game session |
+| PUT | `/api/game/session/:id` | Update game session |
+| GET | `/api/game/session/:id/next-question` | Next question |
+| POST | `/api/game/session/:id/end` | End game session |
 
 ## Deployment
 
-### Render.com (Kostenlos)
+### Render.com (Free)
 
-> **POC-Entscheidung**: Für dieses Proof of Concept wird alles in einem einzelnen Docker-Container deployed.
-> Dies ermöglicht kostenloses Hosting auf Render.com. Siehe [ADR-0009](docs/adr/0009-single-container-deployment.md) für Details.
+> **POC Decision**: For this Proof of Concept, everything is deployed in a single Docker container.
+> This enables free hosting on Render.com. See [ADR-0009](docs/adr/0009-single-container-deployment.md) for details.
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/StrongSteve/duellumdiegeld)
 
-**Manuelles Deployment:**
-1. Fork/Clone dieses Repository
-2. Erstelle einen neuen "Web Service" auf [render.com](https://render.com)
-3. Verbinde dein GitHub Repository
-4. Render erkennt automatisch die `render.yaml` Konfiguration
-5. Klicke "Create Web Service"
+**Manual Deployment:**
+1. Fork/Clone this repository
+2. Create a new "Web Service" on [render.com](https://render.com)
+3. Connect your GitHub repository
+4. Render automatically detects the `render.yaml` configuration
+5. Click "Create Web Service"
 
-**Hinweise:**
-- Der Container enthält PostgreSQL, Backend und Frontend
-- Erster Start dauert ~2-3 Minuten (Build + Migrations)
-- Free Tier: Container schläft nach 15 Min Inaktivität ein (Cold Start ~30-60s)
-- Admin-Credentials erscheinen in den Render Logs
+**Notes:**
+- The container includes PostgreSQL, Backend and Frontend
+- First start takes ~2-3 minutes (Build + Migrations)
+- Free Tier: Container sleeps after 15 min of inactivity (Cold Start ~30-60s)
+- Admin credentials appear in Render Logs
 
-### Docker Compose (Lokal)
+### Docker Compose (Local)
 
 ```bash
-# Alle Services starten
+# Start all services
 docker-compose up -d --build
 
-# App öffnen: http://localhost:8080
-# Die Datenbank wird automatisch mit 40 Fragen geseeded
+# Open app: http://localhost:8080
+# The database is automatically seeded with 40+ questions
 ```
 
-### Admin-Zugang
+### Admin Access
 
-**WICHTIG**: Admin-Passwort und JWT-Secret werden bei jedem Serverstart automatisch neu generiert!
+**IMPORTANT**: Admin password and JWT secret are automatically regenerated on every server start!
 
-Die Zugangsdaten werden prominent in den Server-Logs ausgegeben:
+The credentials are prominently displayed in the server logs:
 
 ```
 docker-compose logs backend
 ```
 
-Beispiel-Ausgabe:
+Example output:
 ```
 ══════════════════════════════════════════════════════════════════════
 
@@ -138,86 +153,86 @@ Beispiel-Ausgabe:
 
 ──────────────────────────────────────────────────────────────────────
 
-   ⚠️  WICHTIG: Diese Zugangsdaten werden bei jedem
-   Neustart neu generiert! Bitte notieren.
+   ⚠️  IMPORTANT: These credentials are regenerated
+   on every restart! Please note them down.
 
 ══════════════════════════════════════════════════════════════════════
 ```
 
-### Sicherheitsfeatures
+### Security Features
 
-- **Auto-generierte Credentials**: Passwort und JWT-Secret werden bei jedem Start neu generiert
-- **Passwort-Hashing**: bcrypt mit 12 Runden
-- **Rate Limiting**: Exponentielles Backoff bei fehlgeschlagenen Logins
-  - 1. Fehlversuch: 5 Sekunden Sperre
-  - 2. Fehlversuch: 50 Sekunden Sperre
-  - 3. Fehlversuch: 500 Sekunden Sperre
-  - Maximal: 1 Stunde Sperre
-- **JWT-Token**: 24h Gültigkeit, validiert gegen Datenbank
+- **Auto-generated credentials**: Password and JWT secret are regenerated on every start
+- **Password hashing**: bcrypt with 12 rounds
+- **Rate limiting**: Exponential backoff on failed logins
+  - 1st failure: 5 seconds lockout
+  - 2nd failure: 50 seconds lockout
+  - 3rd failure: 500 seconds lockout
+  - Maximum: 1 hour lockout
+- **JWT tokens**: 24h validity, validated against database
 
-## Lokale Entwicklung
+## Local Development
 
-### Voraussetzungen
+### Prerequisites
 
 - Node.js 20+
 - Docker & Docker Compose
 
 ### Setup
 
-1. **Repository klonen**
+1. **Clone repository**
    ```bash
    git clone <repository-url>
    cd das-duell-um-die-geld
    ```
 
-2. **Backend einrichten**
+2. **Setup backend**
    ```bash
    cd backend
-   cp .env.example .env  # Dann ADMIN_PASSWORD setzen!
+   cp .env.example .env
    npm install
    npx prisma generate
    npx prisma db push
    npm run start:dev
    ```
 
-3. **Frontend einrichten** (neues Terminal)
+3. **Setup frontend** (new terminal)
    ```bash
    cd frontend
    npm install
    npm run dev
    ```
 
-4. **App öffnen**
+4. **Open app**
    - Frontend: http://localhost:5173
    - Backend API: http://localhost:3000/api
 
-## Spielregeln
+## Game Rules
 
-### Grundprinzip
-Bei jeder Frage müssen die Spieler eine Zahl schätzen. Die Antwort wird geheim aufgeschrieben. Nach und nach werden Hinweise aufgedeckt, und die Spieler können wetten oder aussteigen.
+### Basic Principle
+For each question, players must estimate a number. The answer is written down secretly. Hints are revealed one by one, and players can bet or fold.
 
-### Ablauf
-1. **Frage anzeigen** - Alle lesen die Frage
-2. **Schätzen** - Jeder schreibt seine Schätzung auf
-3. **Einsatzrunde 1** - Erste Wetten
-4. **Hinweis 1** - Erster Hinweis wird aufgedeckt
-5. **Einsatzrunde 2** - Weitere Wetten
-6. **Hinweis 2** - Zweiter Hinweis wird aufgedeckt
-7. **Einsatzrunde 3** - Weitere Wetten
-8. **Auflösung** - Antwort wird gezeigt
-9. **Einsatzrunde 4** - Finale Wetten
-10. **Gewinner** - Nächste Runde
+### Flow
+1. **Show question** - Everyone reads the question
+2. **Estimate** - Everyone writes down their estimate
+3. **Betting round 1** - First bets
+4. **Hint 1** - First hint is revealed
+5. **Betting round 2** - More bets
+6. **Hint 2** - Second hint is revealed
+7. **Betting round 3** - More bets
+8. **Reveal** - Answer is shown
+9. **Betting round 4** - Final bets
+10. **Winner** - Next round
 
-### Wetten
-- Nach jedem Hinweis gibt es eine Wettrunde
-- Small Blind und Big Blind rotieren jede Runde
-- Das Geld wird offline (auf Papier) verwaltet
-- Bluffen ist erlaubt!
+### Betting
+- After each hint there's a betting round
+- Small Blind and Big Blind rotate each round
+- Money is managed offline (on paper)
+- Bluffing is allowed!
 
-### Gewinner
-- Wer am nächsten an der korrekten Zahl liegt, gewinnt den Pot
-- Bei Gleichstand wird geteilt
+### Winner
+- Whoever is closest to the correct number wins the pot
+- In case of a tie, the pot is split
 
-## Lizenz
+## License
 
 MIT
