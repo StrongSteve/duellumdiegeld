@@ -1,44 +1,44 @@
-# ADR 0002: Verwendung von Vue 3 für das Frontend
+# ADR 0002: Use Vue 3 for Frontend
 
 ## Status
-Akzeptiert
+Accepted
 
-## Kontext
-Wir benötigen ein Frontend-Framework für die Tablet-Anwendung. Die Anforderungen sind:
-- Schnelle, reaktive Benutzeroberfläche
-- Komponenten-basierte Architektur
-- State Management für Spielzustand
-- TypeScript-Unterstützung
-- Gute Developer Experience
+## Context
+We need a frontend framework for the tablet application. The requirements are:
+- Fast, reactive user interface
+- Component-based architecture
+- State management for game state
+- TypeScript support
+- Good developer experience
 
-## Entscheidung
-Wir verwenden **Vue 3** mit der Composition API als Frontend-Framework.
+## Decision
+We use **Vue 3** with the Composition API as the frontend framework.
 
-### Gründe:
-1. **Composition API**: Bessere Code-Organisation und Wiederverwendbarkeit
-2. **TypeScript-Support**: Exzellente TypeScript-Integration in Vue 3
-3. **Pinia**: Modernes, typsicheres State Management
-4. **Geringe Bundle-Größe**: Wichtig für schnelles Laden auf Tablets
-5. **Einfache Lernkurve**: Klare Dokumentation
-6. **Single-File Components**: Übersichtliche Komponenten-Struktur
-7. **Reactivity System**: Automatisches Tracking von Abhängigkeiten
+### Reasons:
+1. **Composition API**: Better code organization and reusability
+2. **TypeScript support**: Excellent TypeScript integration in Vue 3
+3. **Pinia**: Modern, type-safe state management
+4. **Small bundle size**: Important for fast loading on tablets
+5. **Easy learning curve**: Clear documentation
+6. **Single-File Components**: Clear component structure
+7. **Reactivity System**: Automatic dependency tracking
 
-### Alternativen betrachtet:
-- **React**: Größere Community, aber mehr Boilerplate
-- **Svelte**: Kleinere Bundle-Größe, aber weniger Ökosystem
-- **Angular**: Zu komplex für diese Anwendung
+### Alternatives considered:
+- **React**: Larger community, but more boilerplate
+- **Svelte**: Smaller bundle size, but smaller ecosystem
+- **Angular**: Too complex for this application
 
-## Konsequenzen
+## Consequences
 
-### Positiv
-- Klare Komponenten-Struktur
-- Einfaches State Management mit Pinia
-- Gute Performance auf Tablets
-- Schnelle Entwicklung
+### Positive
+- Clear component structure
+- Simple state management with Pinia
+- Good performance on tablets
+- Fast development
 
-### Negativ
-- Kleinere Community als React
-- Weniger Job-Market-Relevanz
+### Negative
+- Smaller community than React
+- Less job market relevance
 
 ### Neutral
-- Erfordert Verständnis der Composition API
+- Requires understanding of the Composition API

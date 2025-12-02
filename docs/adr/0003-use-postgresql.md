@@ -1,43 +1,43 @@
-# ADR 0003: Verwendung von PostgreSQL als Datenbank
+# ADR 0003: Use PostgreSQL as Database
 
 ## Status
-Akzeptiert
+Accepted
 
-## Kontext
-Wir benötigen eine Datenbank für:
-- Speicherung von Fragen, Hinweisen und Antworten
-- Admin-Benutzer und Authentifizierung
-- Optionale Spielsitzungen
-- Status-Tracking (pending, approved, rejected)
+## Context
+We need a database for:
+- Storage of questions, hints, and answers
+- Admin users and authentication
+- Optional game sessions
+- Status tracking (pending, approved, rejected)
 
-## Entscheidung
-Wir verwenden **PostgreSQL** als relationale Datenbank.
+## Decision
+We use **PostgreSQL** as the relational database.
 
-### Gründe:
-1. **Zuverlässigkeit**: Bewährte, stabile Datenbank
-2. **ACID-konform**: Garantierte Transaktionen
-3. **JSON-Support**: Flexible Speicherung von Einstellungen
-4. **Prisma-Integration**: Exzellente Unterstützung durch Prisma ORM
-5. **Cloud-Optionen**: Supabase, Neon, Railway bieten managed PostgreSQL
-6. **Skalierbarkeit**: Von klein bis groß skalierbar
-7. **Kostenlos**: Open Source, keine Lizenzkosten
+### Reasons:
+1. **Reliability**: Proven, stable database
+2. **ACID-compliant**: Guaranteed transactions
+3. **JSON support**: Flexible storage of settings
+4. **Prisma integration**: Excellent support by Prisma ORM
+5. **Cloud options**: Supabase, Neon, Railway offer managed PostgreSQL
+6. **Scalability**: Scalable from small to large
+7. **Free**: Open source, no license costs
 
-### Alternativen betrachtet:
-- **MySQL/MariaDB**: Weniger Features, schlechtere JSON-Unterstützung
-- **MongoDB**: Nicht notwendig für relationale Daten
-- **SQLite**: Nicht geeignet für Production mit mehreren Clients
+### Alternatives considered:
+- **MySQL/MariaDB**: Fewer features, worse JSON support
+- **MongoDB**: Not necessary for relational data
+- **SQLite**: Not suitable for production with multiple clients
 
-## Konsequenzen
+## Consequences
 
-### Positiv
-- Zuverlässige Datenspeicherung
-- Einfaches Hosting bei Cloud-Anbietern
-- Gute Prisma-Integration
-- Migrations-Support
+### Positive
+- Reliable data storage
+- Easy hosting with cloud providers
+- Good Prisma integration
+- Migration support
 
-### Negativ
-- Erfordert separate Datenbank-Instanz
-- Komplexer als SQLite für lokale Entwicklung
+### Negative
+- Requires separate database instance
+- More complex than SQLite for local development
 
 ### Neutral
-- Benötigt Docker für lokale Entwicklung
+- Requires Docker for local development

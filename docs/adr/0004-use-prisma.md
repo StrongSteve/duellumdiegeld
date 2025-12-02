@@ -1,44 +1,44 @@
-# ADR 0004: Verwendung von Prisma als ORM
+# ADR 0004: Use Prisma as ORM
 
 ## Status
-Akzeptiert
+Accepted
 
-## Kontext
-Wir benötigen eine Abstraktionsschicht für Datenbankzugriffe, die:
-- Typsichere Abfragen ermöglicht
-- Migrations unterstützt
-- Einfache Relationen handhabt
-- Gute Developer Experience bietet
+## Context
+We need an abstraction layer for database access that:
+- Enables type-safe queries
+- Supports migrations
+- Handles relations easily
+- Provides good developer experience
 
-## Entscheidung
-Wir verwenden **Prisma** als Object-Relational Mapper (ORM).
+## Decision
+We use **Prisma** as the Object-Relational Mapper (ORM).
 
-### Gründe:
-1. **Type Safety**: Generierte TypeScript-Typen aus dem Schema
-2. **Prisma Schema**: Deklaratives, lesbares Datenbankschema
-3. **Migrations**: Automatische Migration-Generierung
-4. **Prisma Studio**: GUI für Datenbank-Inspektion
-5. **Query API**: Intuitive, typsichere Abfrage-API
-6. **Relations**: Einfache Definition von Beziehungen
-7. **Seeding**: Eingebaute Seed-Unterstützung
+### Reasons:
+1. **Type Safety**: Generated TypeScript types from the schema
+2. **Prisma Schema**: Declarative, readable database schema
+3. **Migrations**: Automatic migration generation
+4. **Prisma Studio**: GUI for database inspection
+5. **Query API**: Intuitive, type-safe query API
+6. **Relations**: Easy definition of relationships
+7. **Seeding**: Built-in seed support
 
-### Alternativen betrachtet:
-- **TypeORM**: Mehr Boilerplate, weniger typsicher
-- **Sequelize**: Älteres API, JavaScript-fokussiert
-- **Raw SQL**: Zu fehleranfällig, kein Typ-Support
+### Alternatives considered:
+- **TypeORM**: More boilerplate, less type-safe
+- **Sequelize**: Older API, JavaScript-focused
+- **Raw SQL**: Too error-prone, no type support
 
-## Konsequenzen
+## Consequences
 
-### Positiv
-- Keine SQL-Injection-Risiken
-- Automatische Typen für Frontend und Backend
-- Einfache Schema-Änderungen
-- Gute NestJS-Integration
+### Positive
+- No SQL injection risks
+- Automatic types for frontend and backend
+- Easy schema changes
+- Good NestJS integration
 
-### Negativ
-- Zusätzliche Build-Step (Prisma Generate)
-- Eingeschränkte komplexe Abfragen
-- Dependency auf Prisma-Ökosystem
+### Negative
+- Additional build step (Prisma Generate)
+- Limited complex queries
+- Dependency on Prisma ecosystem
 
 ### Neutral
-- Eigene Query-Sprache zu lernen
+- Own query language to learn

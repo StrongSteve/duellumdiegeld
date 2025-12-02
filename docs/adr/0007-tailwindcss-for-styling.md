@@ -1,47 +1,47 @@
-# ADR 0007: Verwendung von TailwindCSS für Styling
+# ADR 0007: Use TailwindCSS for Styling
 
 ## Status
-Akzeptiert
+Accepted
 
-## Kontext
-Wir benötigen ein Styling-System für die Tablet-optimierte Benutzeroberfläche. Anforderungen:
-- Große, gut lesbare Elemente
-- Konsistentes Design-System
-- Schnelle Entwicklung
-- Responsive Design
-- Dark Mode
+## Context
+We need a styling system for the tablet-optimized user interface. Requirements:
+- Large, readable elements
+- Consistent design system
+- Fast development
+- Responsive design
+- Dark mode
 
-## Entscheidung
-Wir verwenden **TailwindCSS** als Utility-First CSS Framework.
+## Decision
+We use **TailwindCSS** as the utility-first CSS framework.
 
-### Gründe:
-1. **Utility-First**: Schnelle Prototypenentwicklung
-2. **Konsistenz**: Vordefinierte Spacing-, Color-, Typography-Scales
-3. **Konfigurierbar**: Eigenes Design-System in `tailwind.config.js`
-4. **Purging**: Minimale CSS-Dateigröße in Production
-5. **Dark Mode**: Eingebaute Dark-Mode-Unterstützung
-6. **Responsive**: Mobile-first Breakpoints
-7. **IDE-Support**: Gute Autocomplete in VS Code
+### Reasons:
+1. **Utility-first**: Fast prototype development
+2. **Consistency**: Predefined spacing, color, typography scales
+3. **Configurable**: Custom design system in `tailwind.config.js`
+4. **Purging**: Minimal CSS file size in production
+5. **Dark mode**: Built-in dark mode support
+6. **Responsive**: Mobile-first breakpoints
+7. **IDE support**: Good autocomplete in VS Code
 
-### Anpassungen:
-- Erweiterte Farbpalette (Primary, Gold, Success, Danger)
-- Größere Touch-Targets (min. 44px)
-- Angepasste Schriftgrößen für Tablet
-- Custom Components via `@apply`
+### Customizations:
+- Extended color palette (Primary, Gold, Success, Danger)
+- Larger touch targets (min. 44px)
+- Adjusted font sizes for tablet
+- Custom components via `@apply`
 
-## Konsequenzen
+## Consequences
 
-### Positiv
-- Schnelle UI-Entwicklung
-- Konsistentes Erscheinungsbild
-- Kleine Bundle-Größe
-- Keine CSS-Naming-Konflikte
+### Positive
+- Fast UI development
+- Consistent appearance
+- Small bundle size
+- No CSS naming conflicts
 
-### Negativ
-- Längere Klassennamen in Templates
-- Lernkurve für Utility-Klassen
-- Templates können unübersichtlich werden
+### Negative
+- Longer class names in templates
+- Learning curve for utility classes
+- Templates can become cluttered
 
 ### Neutral
-- Erfordert PostCSS-Setup
-- Eigene Komponenten-Klassen für Wiederverwendbarkeit
+- Requires PostCSS setup
+- Custom component classes for reusability

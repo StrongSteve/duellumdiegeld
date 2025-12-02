@@ -1,44 +1,44 @@
-# ADR 0006: Kein Spieler-Login erforderlich
+# ADR 0006: No Player Login Required
 
 ## Status
-Akzeptiert
+Accepted
 
-## Kontext
-Das Spiel wird auf einem gemeinsamen Tablet in der Mitte des Tisches gespielt. Die Frage ist, ob Spieler individuelle Accounts benötigen.
+## Context
+The game is played on a shared tablet in the middle of the table. The question is whether players need individual accounts.
 
-## Entscheidung
-**Spieler benötigen kein Login**. Das Spiel ist für anonyme Gruppennutzung konzipiert.
+## Decision
+**Players do not need a login**. The game is designed for anonymous group use.
 
-### Gründe:
-1. **Analoge Spielerfahrung**: Das Spiel ist ein Hilfsmittel, kein digitales Spiel
-2. **Gemeinsames Gerät**: Alle Spieler teilen sich ein Tablet
-3. **Schneller Start**: Keine Registrierung, sofort spielen
-4. **Offline-Geld**: Spielgeld wird auf Papier verwaltet
-5. **Datenschutz**: Keine persönlichen Daten erforderlich
-6. **Einfachheit**: Weniger Komplexität in der App
+### Reasons:
+1. **Analog game experience**: The game is a tool, not a digital game
+2. **Shared device**: All players share one tablet
+3. **Quick start**: No registration, play immediately
+4. **Offline money**: Play money is managed on paper
+5. **Privacy**: No personal data required
+6. **Simplicity**: Less complexity in the app
 
-### Spieler-Handling:
-- Spielernamen werden nur für die aktuelle Session eingegeben
-- Namen sind optional und dienen nur der Anzeige
-- Keine Persistenz von Spielerdaten zwischen Sessions
+### Player handling:
+- Player names are only entered for the current session
+- Names are optional and only used for display
+- No persistence of player data between sessions
 
-### Ausnahme - Admin:
-- Admins benötigen Login für die Fragenverwaltung
-- JWT-basierte Authentifizierung
-- Separater Admin-Bereich
+### Exception - Admin:
+- Admins need login for question management
+- JWT-based authentication
+- Separate admin area
 
-## Konsequenzen
+## Consequences
 
-### Positiv
-- Niedrige Einstiegshürde
-- Kein Datenschutz-Problem mit Spielerdaten
-- Einfachere Entwicklung
-- Schnellerer Spielstart
+### Positive
+- Low barrier to entry
+- No privacy issues with player data
+- Simpler development
+- Faster game start
 
-### Negativ
-- Keine Spieler-Statistiken
-- Keine personalisierten Erfahrungen
-- Keine Ranglisten
+### Negative
+- No player statistics
+- No personalized experiences
+- No leaderboards
 
 ### Neutral
-- Spielernamen müssen bei jeder Session neu eingegeben werden
+- Player names must be re-entered for each session

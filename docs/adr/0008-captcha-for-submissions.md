@@ -1,49 +1,54 @@
-# ADR 0008: CAPTCHA für öffentliche Frageneinreichungen
+# ADR 0008: CAPTCHA for Public Question Submissions
 
 ## Status
-Akzeptiert
+Accepted
 
-## Kontext
-Die öffentliche Frageneinreichung ist ohne Login zugänglich. Wir müssen uns gegen:
-- Spam-Einreichungen
-- Bots und automatisierte Angriffe
-- Missbräuchliche Inhalte
+## Context
+The public question submission is accessible without login. We need to protect against:
+- Spam submissions
+- Bots and automated attacks
+- Abusive content
 
-schützen.
+## Decision
+We use a **local math CAPTCHA** for question submissions.
 
-## Entscheidung
-Wir verwenden **hCaptcha** (oder alternativ reCAPTCHA) für die Frageneinreichung.
+### Reasons:
+1. **Spam protection**: Prevents automated submissions
+2. **Privacy**: No external services, GDPR compliant
+3. **Simple implementation**: Server-generated math challenge
+4. **No dependencies**: Works offline, no API keys needed
+5. **Free**: No cost, no rate limits
 
-### Gründe:
-1. **Spam-Schutz**: Verhindert automatisierte Einreichungen
-2. **Datenschutz**: hCaptcha ist DSGVO-freundlicher als reCAPTCHA
-3. **Einfache Integration**: JavaScript-Widget + Server-Validierung
-4. **Bewährt**: Weit verbreitete Lösung
-5. **Kostenlos**: Beide Optionen sind für unser Volumen kostenlos
+### Implementation:
+- Frontend: Displays math question (e.g., "What is 7 + 5?")
+- Backend: Generates challenge, validates answer
+- Challenge expires after 5 minutes
+- Server-side validation prevents bypass
 
-### Implementierung:
-- Frontend: CAPTCHA-Widget im Formular
-- Backend: Token-Validierung via API-Call
-- Development: Bypass-Modus wenn kein Secret konfiguriert
-
-### Konfiguration:
+### Configuration:
 ```env
-CAPTCHA_SECRET=your-secret-key
-CAPTCHA_VERIFY_URL=https://hcaptcha.com/siteverify
+# No external configuration needed
+# Math CAPTCHA is fully self-contained
 ```
 
-## Konsequenzen
+### Alternatives considered:
+- **hCaptcha/reCAPTCHA**: External dependency, privacy concerns
+- **Honeypot fields**: Too easy to bypass
+- **Rate limiting only**: Not sufficient against distributed attacks
 
-### Positiv
-- Effektiver Schutz gegen Bots
-- Reduziert Admin-Aufwand für Spam-Entfernung
-- Standardlösung, gut dokumentiert
+## Consequences
 
-### Negativ
-- Zusätzlicher Schritt für legitime Nutzer
-- Abhängigkeit von externem Service
-- Kann Accessibility beeinträchtigen
+### Positive
+- Effective protection against simple bots
+- No privacy concerns (no external tracking)
+- Works offline
+- No API keys to manage
+
+### Negative
+- Less effective against sophisticated bots than hCaptcha/reCAPTCHA
+- Simple math can be solved programmatically
+- Users must solve a math problem
 
 ### Neutral
-- Erfordert API-Key-Setup
-- Server-seitige Validierung notwendig
+- Acceptable trade-off for a POC
+- Can be upgraded to hCaptcha later if needed

@@ -1,45 +1,45 @@
-# ADR 0001: Verwendung von NestJS für das Backend
+# ADR 0001: Use NestJS for Backend
 
 ## Status
-Akzeptiert
+Accepted
 
-## Kontext
-Wir benötigen ein Backend-Framework für die REST API des Spielleiters. Die API muss:
-- RESTful Endpunkte bereitstellen
-- JWT-Authentifizierung unterstützen
-- Validierung von Eingabedaten ermöglichen
-- Gut mit Prisma ORM zusammenarbeiten
-- TypeScript unterstützen
+## Context
+We need a backend framework for the game facilitator's REST API. The API must:
+- Provide RESTful endpoints
+- Support JWT authentication
+- Enable input validation
+- Work well with Prisma ORM
+- Support TypeScript
 
-## Entscheidung
-Wir verwenden **NestJS** als Backend-Framework.
+## Decision
+We use **NestJS** as the backend framework.
 
-### Gründe:
-1. **TypeScript-native**: NestJS ist vollständig in TypeScript geschrieben und bietet exzellente Typsicherheit
-2. **Modulare Architektur**: Das Modul-System ermöglicht saubere Trennung von Concerns
-3. **Dependency Injection**: Integriertes DI-System für testbaren, wartbaren Code
-4. **Decorator-basiert**: Klare, deklarative API-Definition
-5. **Passport-Integration**: Einfache JWT-Authentifizierung
-6. **class-validator**: Eingebaute Validierung mit Decorators
-7. **Große Community**: Viele Plugins, gute Dokumentation
+### Reasons:
+1. **TypeScript-native**: NestJS is fully written in TypeScript and offers excellent type safety
+2. **Modular architecture**: The module system enables clean separation of concerns
+3. **Dependency Injection**: Built-in DI system for testable, maintainable code
+4. **Decorator-based**: Clear, declarative API definition
+5. **Passport integration**: Simple JWT authentication
+6. **class-validator**: Built-in validation with decorators
+7. **Large community**: Many plugins, good documentation
 
-### Alternativen betrachtet:
-- **Express.js**: Zu minimalistisch, erfordert viel Boilerplate
-- **Fastify**: Schneller, aber weniger strukturiert
-- **Koa**: Ähnlich wie Express, keine klare Architektur
+### Alternatives considered:
+- **Express.js**: Too minimalistic, requires a lot of boilerplate
+- **Fastify**: Faster, but less structured
+- **Koa**: Similar to Express, no clear architecture
 
-## Konsequenzen
+## Consequences
 
-### Positiv
-- Klare Projektstruktur von Anfang an
-- Einfache Integration von Middleware und Guards
-- Gute Testbarkeit durch DI
-- Konsistente Codebase
+### Positive
+- Clear project structure from the start
+- Easy integration of middleware and guards
+- Good testability through DI
+- Consistent codebase
 
-### Negativ
-- Höhere Lernkurve als Express
-- Mehr Boilerplate für kleine Projekte
-- Dependency auf das NestJS-Ökosystem
+### Negative
+- Higher learning curve than Express
+- More boilerplate for small projects
+- Dependency on the NestJS ecosystem
 
 ### Neutral
-- Erfordert Verständnis von Decorators und DI
+- Requires understanding of decorators and DI
