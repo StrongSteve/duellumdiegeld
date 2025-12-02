@@ -1,0 +1,15 @@
+node_modules
+dist
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+*.md
+.docker
+Dockerfile*
+docker-compose*
+.eslintrc.js
+.prettierrc
+coverage
+test

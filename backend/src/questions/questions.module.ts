@@ -1,0 +1,13 @@
+import { Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
+import { QuestionsService } from './questions.service';
+import { QuestionsController } from './questions.controller';
+import { CaptchaService } from './captcha.service';
+
+@Module({
+  imports: [HttpModule],
+  providers: [QuestionsService, CaptchaService],
+  controllers: [QuestionsController],
+  exports: [QuestionsService],
+})
+export class QuestionsModule {}

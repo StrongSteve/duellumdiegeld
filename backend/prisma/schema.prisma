@@ -1,0 +1,93 @@
+// Prisma Schema für "Das Duell um die Geld"
+// Quiz/Poker Spiel Facilitator
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Fragen-Status Enum
+enum QuestionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// Kategorien Enum
+enum Category {
+  SCIENCE       // Wissenschaft
+  HISTORY       // Geschichte
+  GEOGRAPHY     // Geografie
+  SPORTS        // Sport
+  TECHNOLOGY    // Technologie
+  POP_CULTURE   // Popkultur
+  MISC          // Sonstiges
+  EVERYDAY      // Alltag
+  ANIMALS       // Tiere
+  FOOD          // Essen & Trinken
+  HEALTH        // Gesundheit
+  MUSIC         // Musik
+  ASTRONOMY     // Astronomie
+}
+
+// Fragen-Modell
+model Question {
+  id              String         @id @default(cuid())
+  category        Category
+  questionText    String         @map("question_text")
+  answerValue     Float          @map("answer_value")
+  answerUnit      String?        @map("answer_unit")
+  explanation     String?
+  sourceUrl       String?        @map("source_url")
+  status          QuestionStatus @default(PENDING)
+  contributorName String?        @map("contributor_name")
+  rejectionReason String?        @map("rejection_reason")
+  playedCount     Int            @default(0) @map("played_count")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  // Relation zu Hinweisen
+  hints Hint[]
+
+  @@map("questions")
+}
+
+// Hinweise-Modell
+model Hint {
+  id         String @id @default(cuid())
+  questionId String @map("question_id")
+  orderIndex Int    @map("order_index")
+  hintText   String @map("hint_text")
+
+  // Relation zur Frage
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, orderIndex])
+  @@map("hints")
+}
+
+// Admin-Benutzer-Modell
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("admin_users")
+}
+
+// Spielsitzung-Modell (optional, für persistente Sitzungen)
+model GameSession {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now()) @map("created_at")
+  settings      Json     @default("{}")
+  usedQuestions Json     @default("[]") @map("used_questions")
+  currentState  String?  @map("current_state")
+  isActive      Boolean  @default(true) @map("is_active")
+
+  @@map("game_sessions")
+}

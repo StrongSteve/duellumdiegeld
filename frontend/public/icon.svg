@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e3a5f"/>
+      <stop offset="100%" style="stop-color:#0f172a"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24"/>
+      <stop offset="50%" style="stop-color:#f59e0b"/>
+      <stop offset="100%" style="stop-color:#d97706"/>
+    </linearGradient>
+    <linearGradient id="goldLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fcd34d"/>
+      <stop offset="100%" style="stop-color:#fbbf24"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+    <filter id="innerGlow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#bg)" filter="url(#shadow)"/>
+
+  <!-- Outer ring -->
+  <circle cx="256" cy="256" r="220" fill="none" stroke="url(#gold)" stroke-width="8" opacity="0.6"/>
+
+  <!-- Euro symbol (€) - main element -->
+  <g transform="translate(256, 256)">
+    <!-- Euro symbol -->
+    <text
+      x="0"
+      y="45"
+      font-family="Arial, sans-serif"
+      font-size="240"
+      font-weight="bold"
+      fill="url(#gold)"
+      text-anchor="middle"
+      filter="url(#innerGlow)"
+    >€</text>
+  </g>
+
+  <!-- Question mark overlay (smaller, positioned) -->
+  <g transform="translate(340, 140)">
+    <circle cx="0" cy="0" r="55" fill="#1e40af" stroke="url(#goldLight)" stroke-width="4"/>
+    <text
+      x="0"
+      y="22"
+      font-family="Arial, sans-serif"
+      font-size="70"
+      font-weight="bold"
+      fill="url(#goldLight)"
+      text-anchor="middle"
+    >?</text>
+  </g>
+
+  <!-- Decorative chips/coins at bottom -->
+  <g transform="translate(130, 380)">
+    <ellipse cx="0" cy="0" rx="35" ry="12" fill="#b45309" opacity="0.8"/>
+    <ellipse cx="0" cy="-8" rx="35" ry="12" fill="url(#gold)"/>
+  </g>
+  <g transform="translate(200, 395)">
+    <ellipse cx="0" cy="0" rx="35" ry="12" fill="#b45309" opacity="0.8"/>
+    <ellipse cx="0" cy="-8" rx="35" ry="12" fill="url(#gold)"/>
+  </g>
+  <g transform="translate(270, 400)">
+    <ellipse cx="0" cy="0" rx="35" ry="12" fill="#b45309" opacity="0.8"/>
+    <ellipse cx="0" cy="-8" rx="35" ry="12" fill="url(#gold)"/>
+  </g>
+
+  <!-- Small stars/sparkles -->
+  <g fill="url(#goldLight)" opacity="0.8">
+    <polygon points="100,120 105,130 115,130 107,137 110,147 100,140 90,147 93,137 85,130 95,130" transform="scale(0.8)"/>
+    <polygon points="420,280 425,290 435,290 427,297 430,307 420,300 410,307 413,297 405,290 415,290" transform="scale(0.6)"/>
+  </g>
+</svg>
