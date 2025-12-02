@@ -49,11 +49,11 @@ defineEmits<{
 
 <style scoped>
 .game-screen-layout {
-  @apply flex flex-col min-h-screen max-h-screen;
+  @apply flex flex-col min-h-screen;
   @apply bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900;
-  /* Safe padding for tablet UI - 32px top/bottom */
-  padding-top: max(env(safe-area-inset-top), 1rem);
-  padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+  /* Safe padding for tablet UI */
+  padding-top: max(env(safe-area-inset-top), 0.75rem);
+  padding-bottom: max(env(safe-area-inset-bottom), 0.75rem);
 }
 
 /* Top Zone - Stepper area */
@@ -66,18 +66,13 @@ defineEmits<{
 /* Center Zone - Main content, vertically centered */
 .game-screen-center {
   @apply flex-1 flex items-center justify-center;
-  @apply overflow-hidden;
-  @apply px-4;
-  /* Ensure content doesn't touch edges */
-  min-height: 0;
+  @apply px-4 py-2;
+  @apply overflow-y-auto;
 }
 
 .game-screen-content {
-  @apply max-w-5xl w-full mx-auto;
-  @apply flex flex-col items-center justify-center;
-  /* Allow scrolling only if absolutely necessary */
-  @apply overflow-y-auto;
-  max-height: 100%;
+  @apply max-w-3xl w-full mx-auto;
+  @apply flex flex-col items-center;
 }
 
 /* Bottom Zone - CTA area */

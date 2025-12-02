@@ -114,23 +114,23 @@ const bettingRoundInfo = computed(() => {
       <div class="game-header">
         <div class="game-header__left">
           <span class="game-header__round">Runde {{ roundNumber }}</span>
+          <button
+            class="exit-button"
+            title="Spiel beenden"
+            @click="confirmEndGame"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span class="exit-button__text">Beenden</span>
+          </button>
         </div>
 
         <div v-if="currentQuestion" class="game-header__stepper">
           <StepIndicator :steps="gameSteps" :current-index="currentStepIndex" />
         </div>
 
-        <div class="game-header__right">
-          <button
-            class="game-header__menu"
-            title="Spiel beenden"
-            @click="confirmEndGame"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+        <div class="game-header__right"></div>
       </div>
     </template>
 
@@ -188,16 +188,14 @@ const bettingRoundInfo = computed(() => {
 
         <!-- BETTING_ROUND -->
         <div v-else-if="currentState === GameState.BETTING_ROUND" class="phase-betting">
+          <!-- Question is the HERO - most important element -->
+          <div class="question-hero">
+            <p class="question-hero__text">{{ currentQuestion.questionText }}</p>
+          </div>
+
           <div class="betting-header">
             <span class="betting-header__emoji">{{ bettingRoundInfo.emoji }}</span>
             <h2 class="betting-header__title">{{ bettingRoundInfo.title }}</h2>
-            <p class="betting-header__desc">{{ bettingRoundInfo.desc }}</p>
-          </div>
-
-          <!-- Question reminder (compact) -->
-          <div class="question-compact">
-            <span class="question-compact__label">Frage:</span>
-            <span class="question-compact__text">{{ currentQuestion.questionText }}</span>
           </div>
 
           <!-- Revealed hints -->
@@ -239,16 +237,15 @@ const bettingRoundInfo = computed(() => {
 
         <!-- HINT_REVEAL -->
         <div v-else-if="currentState === GameState.HINT_REVEAL" class="phase-hint">
+          <!-- Question is the HERO -->
+          <div class="question-hero">
+            <p class="question-hero__text">{{ currentQuestion.questionText }}</p>
+          </div>
+
           <h2 class="phase-title phase-title--primary">
             <span class="phase-title__icon">💡</span>
             Hinweis {{ currentHintIndex }}
           </h2>
-
-          <!-- Question reminder -->
-          <div class="question-compact">
-            <span class="question-compact__label">Frage:</span>
-            <span class="question-compact__text">{{ currentQuestion.questionText }}</span>
-          </div>
 
           <!-- Current hint (hero) -->
           <div class="hint-hero">
@@ -266,16 +263,15 @@ const bettingRoundInfo = computed(() => {
 
         <!-- REVEAL_ANSWER -->
         <div v-else-if="currentState === GameState.REVEAL_ANSWER" class="phase-reveal">
+          <!-- Question is the HERO -->
+          <div class="question-hero">
+            <p class="question-hero__text">{{ currentQuestion.questionText }}</p>
+          </div>
+
           <h2 class="phase-title">
             <span class="phase-title__icon">🎯</span>
             Die Antwort ist...
           </h2>
-
-          <!-- Question -->
-          <div class="question-compact">
-            <span class="question-compact__label">Frage:</span>
-            <span class="question-compact__text">{{ currentQuestion.questionText }}</span>
-          </div>
 
           <!-- Answer (hero) -->
           <div class="answer-hero answer-hero--reveal">
@@ -476,7 +472,7 @@ const bettingRoundInfo = computed(() => {
 }
 
 .game-header__left {
-  @apply flex items-center gap-2;
+  @apply flex flex-col items-start gap-1;
 }
 
 .game-header__round {
@@ -485,18 +481,27 @@ const bettingRoundInfo = computed(() => {
 }
 
 .game-header__stepper {
-  @apply flex-1 max-w-2xl;
+  @apply flex-1 max-w-xl;
 }
 
 .game-header__right {
   @apply flex items-center;
+  @apply flex-shrink-0;
 }
 
-.game-header__menu {
-  @apply w-10 h-10 rounded-full;
-  @apply text-danger-500 hover:text-danger-400 hover:bg-danger-500/10;
-  @apply flex items-center justify-center;
+/* Exit button */
+.exit-button {
+  @apply flex items-center gap-1;
+  @apply px-2 py-1 rounded;
+  @apply text-slate-500 hover:text-slate-300;
+  @apply hover:bg-slate-800/50;
   @apply transition-colors duration-200;
+  @apply text-xs;
+  min-height: 32px;
+}
+
+.exit-button__text {
+  @apply inline;
 }
 
 /* Main game area */
@@ -569,6 +574,20 @@ const bettingRoundInfo = computed(() => {
   @apply text-center;
 }
 
+/* Question Hero - Large prominent question display */
+.question-hero {
+  @apply w-full mb-4;
+  @apply p-4 md:p-6;
+  @apply bg-slate-800/60 rounded-2xl;
+  @apply border border-primary-500/30;
+}
+
+.question-hero__text {
+  @apply text-xl md:text-2xl lg:text-3xl;
+  @apply font-medium text-white text-center;
+  @apply leading-relaxed;
+}
+
 /* Skip button */
 .skip-button {
   @apply mt-4 mx-auto;
@@ -597,20 +616,6 @@ const bettingRoundInfo = computed(() => {
 
 .question-reminder__text {
   @apply text-xl md:text-2xl lg:text-3xl text-slate-100 mt-2;
-}
-
-/* Compact question */
-.question-compact {
-  @apply text-center text-sm text-slate-400 mb-4;
-  @apply p-3 bg-slate-800/50 rounded-lg;
-}
-
-.question-compact__label {
-  @apply font-semibold text-slate-500;
-}
-
-.question-compact__text {
-  @apply text-slate-300 ml-1;
 }
 
 /* Betting phase */
