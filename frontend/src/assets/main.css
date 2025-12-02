@@ -2,7 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base Styles */
+/* =====================================================
+   Base Styles
+   ===================================================== */
 @layer base {
   html {
     @apply antialiased;
@@ -11,22 +13,34 @@
 
   body {
     @apply bg-slate-900 text-white min-h-screen;
+    /* Prevent overscroll bounce on iOS */
+    overscroll-behavior: none;
   }
 
-  /* Scroll-Verhalten */
+  /* Smooth scrolling */
   html {
     scroll-behavior: smooth;
   }
 
-  /* Selection Styling */
+  /* Selection styling */
   ::selection {
     @apply bg-primary-500 text-white;
   }
+
+  /* Safe area padding for notched devices */
+  :root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+  }
 }
 
-/* Component Styles */
+/* =====================================================
+   Component Styles
+   ===================================================== */
 @layer components {
-  /* Primärer Button */
+  /* Primary Button */
   .btn-primary {
     @apply inline-flex items-center justify-center px-8 py-4 text-xl font-semibold text-white
            bg-primary-600 hover:bg-primary-700 active:bg-primary-800
@@ -37,7 +51,7 @@
            disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary-600;
   }
 
-  /* Sekundärer Button */
+  /* Secondary Button */
   .btn-secondary {
     @apply inline-flex items-center justify-center px-6 py-3 text-lg font-medium
            text-slate-300 bg-slate-700 hover:bg-slate-600 active:bg-slate-800
@@ -48,7 +62,7 @@
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
-  /* Gold/Akzent Button */
+  /* Gold/Accent Button */
   .btn-gold {
     @apply inline-flex items-center justify-center px-8 py-4 text-xl font-bold
            text-slate-900 bg-gradient-to-r from-gold-400 to-gold-500
@@ -173,32 +187,32 @@
     @apply h-full bg-primary-500 rounded-full transition-all duration-500;
   }
 
-  /* Spieler-Ansicht Container */
+  /* Game Container */
   .game-container {
     @apply min-h-screen flex flex-col items-center justify-center p-4 md:p-8;
   }
 
-  /* Große Überschrift */
+  /* Display Headings */
   .heading-display {
     @apply text-4xl md:text-5xl lg:text-6xl font-display font-bold text-center;
   }
 
-  /* Frage-Anzeige */
+  /* Question Display */
   .question-display {
     @apply text-2xl md:text-3xl lg:text-4xl font-medium text-center leading-relaxed;
   }
 
-  /* Antwort-Anzeige */
+  /* Answer Display */
   .answer-display {
     @apply text-5xl md:text-6xl lg:text-7xl font-display font-bold text-center text-gold-400;
   }
 
-  /* Hinweis-Karte */
+  /* Hint Card */
   .hint-card {
     @apply card p-6 text-xl md:text-2xl text-center bg-slate-800/80 backdrop-blur;
   }
 
-  /* Hilfe-Button */
+  /* Help Button */
   .help-button {
     @apply btn-icon text-slate-500 hover:text-primary-400;
   }
@@ -265,7 +279,9 @@
   }
 }
 
-/* Animations */
+/* =====================================================
+   Animations
+   ===================================================== */
 @layer utilities {
   @keyframes slide-up {
     from {
@@ -307,6 +323,17 @@
     }
   }
 
+  @keyframes fade-slide-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   .animate-slide-up {
     animation: slide-up 0.3s ease-out;
   }
@@ -322,4 +349,120 @@
   .animate-pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
   }
+
+  .animate-fade-slide-in {
+    animation: fade-slide-in 0.25s ease-out;
+  }
+}
+
+/* =====================================================
+   iPad Landscape Optimization (1024x768)
+   ===================================================== */
+
+/* Target iPad landscape with Safari toolbars visible (~650px usable height) */
+@media (min-width: 1024px) and (max-height: 800px) {
+  /* Reduce padding for compact layout */
+  .game-container {
+    @apply p-4;
+  }
+
+  /* Ensure content fits without scrolling */
+  .card-body {
+    @apply p-4;
+  }
+
+  /* Slightly smaller headings */
+  .heading-display {
+    @apply text-3xl md:text-4xl;
+  }
+
+  .question-display {
+    @apply text-xl md:text-2xl;
+  }
+
+  .answer-display {
+    @apply text-4xl md:text-5xl;
+  }
+}
+
+/* =====================================================
+   Touch Target Optimization
+   ===================================================== */
+
+/* Ensure minimum touch targets (44x44px Apple guideline, 56px preferred) */
+@layer utilities {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .touch-target-lg {
+    min-height: 56px;
+    min-width: 56px;
+  }
+}
+
+/* =====================================================
+   Vue Transition Classes
+   ===================================================== */
+
+/* Fade transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Slide-fade transition */
+.slide-fade-enter-active {
+  transition: all 0.25s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.2s ease-in;
+}
+
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* Scale transition */
+.scale-enter-active,
+.scale-leave-active {
+  transition: all 0.2s ease;
+}
+
+.scale-enter-from,
+.scale-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+/* Collapse transition for collapsible panels */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: all 0.2s ease-out;
+  overflow: hidden;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  opacity: 0;
+  max-height: 0;
+}
+
+.collapse-enter-to,
+.collapse-leave-from {
+  opacity: 1;
+  max-height: 500px;
 }

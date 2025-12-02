@@ -1,22 +1,34 @@
 <script setup lang="ts">
+/**
+ * GameView - Main game interface
+ *
+ * Handles all game phases with consistent layout using GameScreenLayout.
+ * Optimized for iPad landscape (1024x768 with Safari toolbars).
+ */
+
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '@/stores/game'
 import { GameState } from '@/types'
+import GameScreenLayout from '@/components/GameScreenLayout.vue'
 import StepIndicator from '@/components/StepIndicator.vue'
 import QuestionCard from '@/components/QuestionCard.vue'
-import HintCard from '@/components/HintCard.vue'
 import ExplanationPanel from '@/components/ExplanationPanel.vue'
-import CTAButton from '@/components/CTAButton.vue'
+import PrimaryButton from '@/components/PrimaryButton.vue'
+import SecondaryButton from '@/components/SecondaryButton.vue'
+import CollapsiblePanel from '@/components/CollapsiblePanel.vue'
+import PokerTable from '@/components/PokerTable.vue'
+import WinnerSelection from '@/components/WinnerSelection.vue'
 import HelpModal from '@/components/HelpModal.vue'
 
 const router = useRouter()
 const gameStore = useGameStore()
 
+// Modals
 const showEndGameModal = ref(false)
 const showBettingRulesModal = ref(false)
 
-// Computed
+// Computed from store
 const currentQuestion = computed(() => gameStore.currentQuestion)
 const currentState = computed(() => gameStore.currentState)
 const revealedHints = computed(() => gameStore.revealedHints)
@@ -32,13 +44,7 @@ const availableHints = computed(() => gameStore.availableHints)
 const smallBlindPlayer = computed(() => gameStore.smallBlindPlayer)
 const bigBlindPlayer = computed(() => gameStore.bigBlindPlayer)
 
-// Should show player table (not in intro states)
-const showPlayerTable = computed(() => {
-  return currentState.value !== GameState.QUESTION_INTRO &&
-         currentState.value !== GameState.WRITE_GUESSES
-})
-
-// Should show answer (after reveal)
+// Whether the answer is revealed
 const showAnswer = computed(() => {
   return currentState.value === GameState.REVEAL_ANSWER ||
          currentState.value === GameState.ROUND_SUMMARY ||
@@ -82,593 +88,750 @@ function togglePlayerActive(playerName: string) {
 }
 
 async function startNextRound() {
-  const success = await gameStore.nextRound()
-  if (!success && gameStore.currentState === GameState.GAME_OVER) {
-    // No more questions available
-  }
+  await gameStore.nextRound()
 }
 
-// Skip question (if already known)
 async function skipQuestion() {
-  const success = await gameStore.skipQuestion()
-  if (!success && gameStore.currentState === GameState.GAME_OVER) {
-    // No more questions available
-  }
+  await gameStore.skipQuestion()
 }
 
-// Betting round description
-const bettingRoundDescription = computed(() => {
-  switch (bettingRoundNumber.value) {
-    case 1:
-      return 'Erste Einsatzrunde nach dem Schätzen - wie der Pre-Flop beim Poker'
-    case 2:
-      return 'Einsatzrunde nach dem ersten Hinweis - wie der Flop'
-    case 3:
-      return 'Einsatzrunde nach dem zweiten Hinweis - wie der Turn'
-    case 4:
-      return 'Letzte Einsatzrunde nach der Auflösung - wie der River'
-    default:
-      return ''
+// Betting round descriptions
+const bettingRoundInfo = computed(() => {
+  const rounds = {
+    1: { emoji: '🎴', title: 'Einsatzrunde 1', desc: 'Pre-Flop: Erste Einsatzrunde nach dem Schätzen' },
+    2: { emoji: '🃏', title: 'Einsatzrunde 2', desc: 'Flop: Nach dem ersten Hinweis' },
+    3: { emoji: '♠️', title: 'Einsatzrunde 3', desc: 'Turn: Nach dem zweiten Hinweis' },
+    4: { emoji: '♦️', title: 'Letzte Einsatzrunde', desc: 'River: Die Antwort ist bekannt!' }
   }
+  return rounds[bettingRoundNumber.value as keyof typeof rounds] || { emoji: '💰', title: 'Einsatzrunde', desc: '' }
 })
-
-const bettingRoundEmoji = computed(() => {
-  switch (bettingRoundNumber.value) {
-    case 1: return '🎴'
-    case 2: return '🃏'
-    case 3: return '♠️'
-    case 4: return '♦️'
-    default: return '💰'
-  }
-})
-
-// Player role checks
-function isSmallBlind(playerName: string) {
-  return smallBlindPlayer.value?.name === playerName
-}
-
-function isBigBlind(playerName: string) {
-  return bigBlindPlayer.value?.name === playerName
-}
 </script>
 
 <template>
-  <div class="game-view min-h-screen flex flex-col bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800">
-    <!-- Header -->
-    <header class="p-3 md:p-4 flex-shrink-0">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <span class="text-xl">💰</span>
-          <span class="text-slate-400 text-sm">Runde {{ roundNumber }}</span>
+  <GameScreenLayout>
+    <!-- Top: Header with round info and stepper -->
+    <template #top>
+      <div class="game-header">
+        <div class="game-header__left">
+          <span class="game-header__round">Runde {{ roundNumber }}</span>
         </div>
 
-        <button
-          class="btn-icon text-danger-500 hover:text-danger-400"
-          title="Spiel beenden"
-          @click="confirmEndGame"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
+        <div v-if="currentQuestion" class="game-header__stepper">
+          <StepIndicator :steps="gameSteps" :current-index="currentStepIndex" />
+        </div>
 
-      <!-- Step Indicator -->
-      <div v-if="currentQuestion" class="mt-2">
-        <StepIndicator :steps="gameSteps" :current-index="currentStepIndex" />
+        <div class="game-header__right">
+          <button
+            class="game-header__menu"
+            title="Spiel beenden"
+            @click="confirmEndGame"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       </div>
-    </header>
+    </template>
 
-    <!-- Main Content -->
-    <main class="flex-1 flex items-center justify-center p-3 md:p-6 overflow-auto">
+    <!-- Main content area -->
+    <div class="game-main">
       <!-- Loading State -->
-      <div v-if="gameStore.isLoading" class="text-center">
-        <div class="animate-spin w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full mx-auto mb-3" />
-        <p class="text-slate-400 text-sm">Lädt...</p>
+      <div v-if="gameStore.isLoading" class="game-loading">
+        <div class="game-loading__spinner" />
+        <p class="game-loading__text">Lädt...</p>
       </div>
 
-      <!-- Error State -->
-      <div v-else-if="gameStore.error && currentState === GameState.GAME_OVER" class="text-center max-w-lg">
-        <div class="text-5xl mb-4">🏁</div>
-        <h2 class="heading-display text-2xl text-white mb-3">Spiel beendet</h2>
-        <p class="text-slate-400 mb-6">{{ gameStore.error }}</p>
-        <CTAButton variant="primary" @click="endGame">
-          Zur Startseite
-        </CTAButton>
+      <!-- Game Over State -->
+      <div v-else-if="gameStore.error && currentState === GameState.GAME_OVER" class="game-over">
+        <div class="game-over__icon">🏁</div>
+        <h2 class="game-over__title">Spiel beendet</h2>
+        <p class="game-over__message">{{ gameStore.error }}</p>
       </div>
 
       <!-- Game States -->
       <template v-else-if="currentQuestion">
         <!-- QUESTION_INTRO -->
-        <div v-if="currentState === GameState.QUESTION_INTRO" class="game-layout animate-fade-in">
-          <div class="game-content">
-            <div class="text-center mb-4">
-              <h2 class="text-xl md:text-2xl font-semibold text-primary-400">
-                ❓ Neue Frage
-              </h2>
-            </div>
+        <div v-if="currentState === GameState.QUESTION_INTRO" class="phase-intro">
+          <h2 class="phase-title">
+            <span class="phase-title__icon">❓</span>
+            Neue Frage
+          </h2>
 
-            <QuestionCard
-              :question-text="currentQuestion.questionText"
-              :category="currentQuestion.category"
-            />
+          <QuestionCard
+            :question-text="currentQuestion.questionText"
+            :category="currentQuestion.category"
+            class="hero-card"
+          />
 
-            <!-- Skip Button -->
-            <button
-              class="mt-3 text-slate-500 hover:text-slate-300 text-sm flex items-center gap-1 mx-auto transition-colors"
-              @click="skipQuestion"
-              :disabled="gameStore.isLoading"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-              </svg>
-              Frage überspringen (bereits bekannt)
-            </button>
-          </div>
-
-          <div class="game-action">
-            <CTAButton variant="gold" size="lg" @click="nextStep">
-              Alle bereit → Schätzen
-            </CTAButton>
-          </div>
+          <button class="skip-button" @click="skipQuestion" :disabled="gameStore.isLoading">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+            Frage überspringen (bereits bekannt)
+          </button>
         </div>
 
         <!-- WRITE_GUESSES -->
-        <div v-else-if="currentState === GameState.WRITE_GUESSES" class="game-layout animate-fade-in">
-          <div class="game-content">
-            <div class="text-center mb-4">
-              <h2 class="heading-display text-3xl md:text-4xl text-gold-400 mb-2">
-                📝 Schätzt jetzt!
-              </h2>
-              <p class="text-lg text-slate-300">
-                Alle Spieler: Schreibt eure Schätzung geheim auf.
-              </p>
-            </div>
+        <div v-else-if="currentState === GameState.WRITE_GUESSES" class="phase-guessing">
+          <h2 class="phase-title phase-title--gold">
+            <span class="phase-title__icon">📝</span>
+            Schätzt jetzt!
+          </h2>
+          <p class="phase-subtitle">Alle Spieler: Schreibt eure Schätzung geheim auf.</p>
 
-            <!-- Question reminder -->
-            <div class="card p-6 md:p-8 bg-slate-800/80 backdrop-blur border-slate-600/50">
-              <div class="text-center">
-                <span class="text-primary-400 font-bold text-sm md:text-base">Frage</span>
-              </div>
-              <p class="text-xl md:text-2xl lg:text-3xl text-center text-slate-100 mt-2">
-                {{ currentQuestion.questionText }}
-              </p>
-            </div>
-          </div>
-
-          <div class="game-action">
-            <CTAButton variant="primary" size="lg" @click="nextStep">
-              Alle haben geschätzt → Einsätze
-            </CTAButton>
+          <div class="question-reminder">
+            <span class="question-reminder__label">Frage</span>
+            <p class="question-reminder__text">{{ currentQuestion.questionText }}</p>
           </div>
         </div>
 
-        <!-- All other states with consistent layout -->
-        <div v-else class="game-layout animate-fade-in">
-          <div class="game-content">
-            <!-- Question Card - always at top -->
-            <div class="card p-6 md:p-8 bg-slate-800/80 backdrop-blur border-slate-600/50 mb-3">
-              <div class="text-center">
-                <span class="text-primary-400 font-bold text-sm md:text-base">Frage</span>
-              </div>
-              <p class="text-xl md:text-2xl lg:text-3xl text-center text-slate-100 mt-2">
-                {{ currentQuestion.questionText }}
-              </p>
+        <!-- BETTING_ROUND -->
+        <div v-else-if="currentState === GameState.BETTING_ROUND" class="phase-betting">
+          <div class="betting-header">
+            <span class="betting-header__emoji">{{ bettingRoundInfo.emoji }}</span>
+            <h2 class="betting-header__title">{{ bettingRoundInfo.title }}</h2>
+            <p class="betting-header__desc">{{ bettingRoundInfo.desc }}</p>
+          </div>
+
+          <!-- Question reminder (compact) -->
+          <div class="question-compact">
+            <span class="question-compact__label">Frage:</span>
+            <span class="question-compact__text">{{ currentQuestion.questionText }}</span>
+          </div>
+
+          <!-- Revealed hints -->
+          <div v-if="revealedHints.length > 0" class="hints-compact">
+            <div v-for="(hint, index) in revealedHints" :key="hint.id" class="hint-tag">
+              <span class="hint-tag__number">{{ index + 1 }}</span>
+              <span class="hint-tag__text">{{ hint.hintText }}</span>
             </div>
+          </div>
 
-            <!-- Hints and Answer Cards -->
-            <div v-if="revealedHints.length > 0 || showAnswer" class="cards-row mb-3">
-              <HintCard
-                v-for="(hint, index) in revealedHints"
-                :key="hint.id"
-                :hint-number="index + 1"
-                :hint-text="hint.hintText"
-                class="card-item"
-              />
-              <!-- Answer card -->
-              <div v-if="showAnswer" class="card card-item p-6 md:p-8 bg-gradient-to-br from-gold-900/30 to-slate-800 border-gold-500/50" :class="{ 'animate-scale-in': currentState === GameState.REVEAL_ANSWER }">
-                <div class="text-center">
-                  <div class="text-gold-400 font-bold text-sm md:text-base">Lösung</div>
-                  <div class="answer-display-card mt-2">
-                    {{ currentQuestion.answerValue.toLocaleString('de-DE') }}
-                    <span v-if="currentQuestion.answerUnit" class="text-gold-400/70 text-lg ml-1">
-                      {{ currentQuestion.answerUnit }}
-                    </span>
-                  </div>
-                </div>
-              </div>
+          <!-- Answer (if betting round 4) -->
+          <div v-if="showAnswer" class="answer-hero">
+            <span class="answer-hero__label">Lösung</span>
+            <div class="answer-hero__value">
+              {{ currentQuestion.answerValue.toLocaleString('de-DE') }}
+              <span v-if="currentQuestion.answerUnit" class="answer-hero__unit">{{ currentQuestion.answerUnit }}</span>
             </div>
+          </div>
 
-            <!-- State-specific content -->
-            <!-- BETTING_ROUND header -->
-            <div v-if="currentState === GameState.BETTING_ROUND" class="text-center mb-3">
-              <div class="text-3xl mb-1">{{ bettingRoundEmoji }}</div>
-              <h2 class="heading-display text-xl md:text-2xl text-gold-400 mb-1">
-                Einsatzrunde {{ bettingRoundNumber }}
-              </h2>
-              <p class="text-slate-400 text-xs">
-                {{ bettingRoundDescription }}
-              </p>
+          <!-- Poker table -->
+          <PokerTable
+            :players="settings.players"
+            :small-blind-name="smallBlindPlayer?.name"
+            :big-blind-name="bigBlindPlayer?.name"
+            show-pot
+            pot-label="Pot"
+            class="betting-table"
+          />
+
+          <!-- Rules hint -->
+          <button class="rules-hint" @click="showBettingRulesModal = true">
+            <span class="rules-hint__chips">
+              <span class="chip-mini chip-mini--sb">SB</span>
+              <span class="chip-mini chip-mini--bb">BB</span>
+            </span>
+            <span class="rules-hint__text">Small Blind · Big Blind · <span class="underline">Regeln</span></span>
+          </button>
+        </div>
+
+        <!-- HINT_REVEAL -->
+        <div v-else-if="currentState === GameState.HINT_REVEAL" class="phase-hint">
+          <h2 class="phase-title phase-title--primary">
+            <span class="phase-title__icon">💡</span>
+            Hinweis {{ currentHintIndex }}
+          </h2>
+
+          <!-- Question reminder -->
+          <div class="question-compact">
+            <span class="question-compact__label">Frage:</span>
+            <span class="question-compact__text">{{ currentQuestion.questionText }}</span>
+          </div>
+
+          <!-- Current hint (hero) -->
+          <div class="hint-hero">
+            <p class="hint-hero__text">{{ availableHints[currentHintIndex - 1]?.hintText }}</p>
+          </div>
+
+          <!-- Previous hints -->
+          <div v-if="revealedHints.length > 1" class="hints-previous">
+            <div v-for="(hint, index) in revealedHints.slice(0, -1)" :key="hint.id" class="hint-tag hint-tag--muted">
+              <span class="hint-tag__number">{{ index + 1 }}</span>
+              <span class="hint-tag__text">{{ hint.hintText }}</span>
             </div>
+          </div>
+        </div>
 
-            <!-- HINT_REVEAL header -->
-            <div v-if="currentState === GameState.HINT_REVEAL" class="text-center mb-3">
-              <h2 class="heading-display text-2xl md:text-3xl text-primary-400 mb-1">
-                💡 Hinweis {{ currentHintIndex }}
-              </h2>
-              <!-- Current hint prominent -->
-              <div class="card p-6 bg-gradient-to-br from-primary-900/30 to-slate-800 border-primary-500/50 animate-scale-in mt-3">
-                <div class="text-center">
-                  <p class="text-xl md:text-2xl text-white font-medium">
-                    {{ availableHints[currentHintIndex - 1]?.hintText }}
-                  </p>
-                </div>
-              </div>
+        <!-- REVEAL_ANSWER -->
+        <div v-else-if="currentState === GameState.REVEAL_ANSWER" class="phase-reveal">
+          <h2 class="phase-title">
+            <span class="phase-title__icon">🎯</span>
+            Die Antwort ist...
+          </h2>
+
+          <!-- Question -->
+          <div class="question-compact">
+            <span class="question-compact__label">Frage:</span>
+            <span class="question-compact__text">{{ currentQuestion.questionText }}</span>
+          </div>
+
+          <!-- Answer (hero) -->
+          <div class="answer-hero answer-hero--reveal">
+            <span class="answer-hero__label">Lösung</span>
+            <div class="answer-hero__value">
+              {{ currentQuestion.answerValue.toLocaleString('de-DE') }}
+              <span v-if="currentQuestion.answerUnit" class="answer-hero__unit">{{ currentQuestion.answerUnit }}</span>
             </div>
+          </div>
 
-            <!-- REVEAL_ANSWER header -->
-            <div v-if="currentState === GameState.REVEAL_ANSWER" class="text-center mb-3">
-              <h2 class="text-xl md:text-2xl font-semibold text-primary-400">
-                🎯 Die Antwort ist...
-              </h2>
-              <!-- Source link -->
-              <div v-if="currentQuestion.sourceUrl" class="mt-3">
-                <a
-                  :href="currentQuestion.sourceUrl"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="inline-flex items-center gap-2 text-primary-400 hover:text-primary-300 text-sm"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                  Quelle ansehen
-                </a>
-              </div>
-              <!-- Explanation -->
-              <div v-if="currentQuestion.explanation" class="text-left mt-3">
-                <ExplanationPanel
-                  title="Warum?"
-                  :content="currentQuestion.explanation"
-                />
-              </div>
+          <!-- Hints summary -->
+          <div v-if="revealedHints.length > 0" class="hints-summary">
+            <div v-for="(hint, index) in revealedHints" :key="hint.id" class="hint-tag hint-tag--muted">
+              <span class="hint-tag__number">{{ index + 1 }}</span>
+              <span class="hint-tag__text">{{ hint.hintText }}</span>
             </div>
+          </div>
 
-            <!-- ROUND_SUMMARY header -->
-            <div v-if="currentState === GameState.ROUND_SUMMARY" class="text-center mb-3">
-              <h2 class="heading-display text-2xl md:text-3xl text-white mb-1">
-                ✅ Runde {{ roundNumber }} abgeschlossen
-              </h2>
-            </div>
-
-            <!-- Player Table Visualization - shown in all states except intro -->
-            <div v-if="showPlayerTable" class="poker-table-container mt-3">
-              <!-- Players top row -->
-              <div class="players-top">
-                <div
-                  v-for="player in settings.players.slice(0, Math.ceil(settings.players.length / 2))"
-                  :key="'top-' + player.name"
-                  class="player-seat-compact"
-                  :class="{ 'player-inactive': !player.isActive }"
-                >
-                  <div class="player-chips-compact">
-                    <div v-if="isSmallBlind(player.name)" class="chip-small chip-sb" title="Small Blind">SB</div>
-                    <div v-if="isBigBlind(player.name)" class="chip-small chip-bb" title="Big Blind">BB</div>
-                  </div>
-                  <div class="player-avatar-compact" :class="{
-                    'ring-blue-500': isSmallBlind(player.name),
-                    'ring-red-500': isBigBlind(player.name)
-                  }">
-                    {{ player.name.charAt(0).toUpperCase() }}
-                  </div>
-                  <div class="player-name-compact">{{ player.name }}</div>
-                </div>
-              </div>
-
-              <!-- The table -->
-              <div class="table-felt-compact">
-                <span class="text-gold-400/60 text-xs">Pot</span>
-              </div>
-
-              <!-- Players bottom row -->
-              <div class="players-bottom">
-                <div
-                  v-for="player in settings.players.slice(Math.ceil(settings.players.length / 2))"
-                  :key="'bottom-' + player.name"
-                  class="player-seat-compact"
-                  :class="{ 'player-inactive': !player.isActive }"
-                >
-                  <div class="player-name-compact">{{ player.name }}</div>
-                  <div class="player-avatar-compact" :class="{
-                    'ring-blue-500': isSmallBlind(player.name),
-                    'ring-red-500': isBigBlind(player.name)
-                  }">
-                    {{ player.name.charAt(0).toUpperCase() }}
-                  </div>
-                  <div class="player-chips-compact">
-                    <div v-if="isSmallBlind(player.name)" class="chip-small chip-sb" title="Small Blind">SB</div>
-                    <div v-if="isBigBlind(player.name)" class="chip-small chip-bb" title="Big Blind">BB</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Betting rules button (only in BETTING_ROUND) -->
-            <button
-              v-if="currentState === GameState.BETTING_ROUND"
-              class="card p-2 bg-slate-800/50 text-sm w-full hover:bg-slate-700/50 transition-colors cursor-pointer mt-2"
-              @click="showBettingRulesModal = true"
+          <!-- Source & Explanation -->
+          <div class="reveal-details">
+            <a
+              v-if="currentQuestion.sourceUrl"
+              :href="currentQuestion.sourceUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="source-link"
             >
-              <div class="flex items-center justify-center gap-2 text-slate-400">
-                <span>❓</span>
-                <span class="text-xs">
-                  <strong class="text-blue-400">SB</strong> Small Blind ·
-                  <strong class="text-red-400">BB</strong> Big Blind ·
-                  <span class="text-primary-400 underline">Regeln anzeigen</span>
-                </span>
-              </div>
-            </button>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              Quelle ansehen
+            </a>
 
-            <!-- Player management (only in ROUND_SUMMARY) -->
-            <div v-if="currentState === GameState.ROUND_SUMMARY" class="card p-4 mt-3">
-              <h3 class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3">
-                Spieler-Status verwalten
-              </h3>
-              <div class="flex flex-wrap gap-2">
-                <button
-                  v-for="player in settings.players"
-                  :key="'manage-' + player.name"
-                  class="px-3 py-1.5 rounded-lg text-sm transition-all duration-200 flex items-center gap-1"
-                  :class="{
-                    'bg-slate-700 text-slate-300 hover:bg-slate-600': player.isActive,
-                    'bg-danger-900/30 text-danger-400 border border-danger-500/50': !player.isActive
-                  }"
-                  @click="togglePlayerActive(player.name)"
-                >
-                  <span v-if="!player.isActive">❌</span>
-                  <span v-else>✓</span>
-                  {{ player.name }}
-                </button>
-              </div>
-              <p class="text-slate-500 text-xs mt-2">
-                Klicke auf einen Spieler um ihn auszuschalten oder wieder zu aktivieren.
-              </p>
+            <ExplanationPanel
+              v-if="currentQuestion.explanation"
+              title="Warum?"
+              :content="currentQuestion.explanation"
+            />
+          </div>
+        </div>
+
+        <!-- ROUND_SUMMARY -->
+        <div v-else-if="currentState === GameState.ROUND_SUMMARY" class="phase-summary">
+          <h2 class="phase-title phase-title--success">
+            <span class="phase-title__icon">✅</span>
+            Runde {{ roundNumber }} abgeschlossen
+          </h2>
+
+          <!-- Answer summary -->
+          <div class="summary-answer">
+            <div class="summary-answer__question">{{ currentQuestion.questionText }}</div>
+            <div class="summary-answer__value">
+              {{ currentQuestion.answerValue.toLocaleString('de-DE') }}
+              <span v-if="currentQuestion.answerUnit">{{ currentQuestion.answerUnit }}</span>
             </div>
           </div>
 
-          <!-- Action buttons -->
-          <div class="game-action">
-            <!-- BETTING_ROUND action -->
-            <CTAButton v-if="currentState === GameState.BETTING_ROUND" variant="gold" size="lg" @click="nextStep">
-              Einsätze fertig → Weiter
-            </CTAButton>
+          <!-- Winner selection (optional) -->
+          <WinnerSelection :players="settings.players" />
 
-            <!-- HINT_REVEAL action -->
-            <CTAButton v-if="currentState === GameState.HINT_REVEAL" variant="primary" size="lg" @click="nextStep">
-              Verstanden → Einsatzrunde
-            </CTAButton>
-
-            <!-- REVEAL_ANSWER action -->
-            <CTAButton v-if="currentState === GameState.REVEAL_ANSWER" variant="gold" size="lg" @click="nextStep">
-              → Letzte Einsatzrunde
-            </CTAButton>
-
-            <!-- ROUND_SUMMARY actions -->
-            <div v-if="currentState === GameState.ROUND_SUMMARY" class="flex flex-col gap-2">
-              <CTAButton variant="gold" @click="startNextRound">
-                Nächste Frage
-              </CTAButton>
-              <CTAButton variant="outline" size="sm" @click="confirmEndGame">
-                Spiel beenden
-              </CTAButton>
+          <!-- Player management -->
+          <CollapsiblePanel title="Spieler verwalten" icon="👥">
+            <div class="player-management">
+              <button
+                v-for="player in settings.players"
+                :key="'manage-' + player.name"
+                class="player-toggle"
+                :class="{ 'player-toggle--inactive': !player.isActive }"
+                @click="togglePlayerActive(player.name)"
+              >
+                <span v-if="!player.isActive">❌</span>
+                <span v-else>✓</span>
+                {{ player.name }}
+              </button>
             </div>
-          </div>
+            <p class="player-management__hint">
+              Klicke auf einen Spieler um ihn auszuschalten oder wieder zu aktivieren.
+            </p>
+          </CollapsiblePanel>
         </div>
       </template>
-    </main>
+    </div>
 
-    <!-- End Game Modal -->
-    <HelpModal
-      :is-open="showEndGameModal"
-      title="Spiel beenden?"
-      @close="cancelEndGame"
-    >
-      <p class="text-slate-300 mb-6">
-        Möchtest du das Spiel wirklich beenden?
-      </p>
+    <!-- Actions slot -->
+    <template #actions>
+      <!-- Loading/Error state -->
+      <template v-if="gameStore.isLoading" />
+      <PrimaryButton v-else-if="gameStore.error && currentState === GameState.GAME_OVER" @click="endGame">
+        Zur Startseite
+      </PrimaryButton>
 
-      <div class="flex gap-4">
-        <CTAButton variant="danger" @click="endGame">
-          Ja, beenden
-        </CTAButton>
-        <CTAButton variant="secondary" @click="cancelEndGame">
-          Abbrechen
-        </CTAButton>
+      <!-- Game state actions -->
+      <template v-else-if="currentQuestion">
+        <!-- QUESTION_INTRO -->
+        <PrimaryButton v-if="currentState === GameState.QUESTION_INTRO" variant="gold" @click="nextStep">
+          Alle bereit → Schätzen
+        </PrimaryButton>
+
+        <!-- WRITE_GUESSES -->
+        <PrimaryButton v-else-if="currentState === GameState.WRITE_GUESSES" @click="nextStep">
+          Alle haben geschätzt → Einsätze
+        </PrimaryButton>
+
+        <!-- BETTING_ROUND -->
+        <PrimaryButton v-else-if="currentState === GameState.BETTING_ROUND" variant="gold" @click="nextStep">
+          Einsätze fertig → Weiter
+        </PrimaryButton>
+
+        <!-- HINT_REVEAL -->
+        <PrimaryButton v-else-if="currentState === GameState.HINT_REVEAL" @click="nextStep">
+          Verstanden → Einsatzrunde
+        </PrimaryButton>
+
+        <!-- REVEAL_ANSWER -->
+        <PrimaryButton v-else-if="currentState === GameState.REVEAL_ANSWER" variant="gold" @click="nextStep">
+          → Letzte Einsatzrunde
+        </PrimaryButton>
+
+        <!-- ROUND_SUMMARY -->
+        <template v-else-if="currentState === GameState.ROUND_SUMMARY">
+          <SecondaryButton variant="danger" @click="confirmEndGame">
+            Spiel beenden
+          </SecondaryButton>
+          <PrimaryButton variant="gold" @click="startNextRound">
+            Nächste Runde
+          </PrimaryButton>
+        </template>
+      </template>
+    </template>
+  </GameScreenLayout>
+
+  <!-- End Game Modal -->
+  <HelpModal
+    :is-open="showEndGameModal"
+    title="Spiel beenden?"
+    @close="cancelEndGame"
+  >
+    <p class="text-slate-300 mb-6">
+      Möchtest du das Spiel wirklich beenden?
+    </p>
+    <div class="flex gap-4 justify-center">
+      <SecondaryButton @click="cancelEndGame">
+        Abbrechen
+      </SecondaryButton>
+      <PrimaryButton variant="primary" @click="endGame">
+        Ja, beenden
+      </PrimaryButton>
+    </div>
+  </HelpModal>
+
+  <!-- Betting Rules Modal -->
+  <HelpModal
+    :is-open="showBettingRulesModal"
+    title="Einsatzregeln"
+    @close="showBettingRulesModal = false"
+  >
+    <div class="rules-content">
+      <div class="rules-section">
+        <h4 class="rules-section__title">Positionen</h4>
+        <ul class="rules-section__list">
+          <li><strong class="text-blue-400">SB (Small Blind)</strong> - Kleiner Pflichteinsatz</li>
+          <li><strong class="text-red-400">BB (Big Blind)</strong> - Großer Pflichteinsatz (2x SB)</li>
+        </ul>
+        <p class="rules-section__note">Positionen rotieren jede Runde im Uhrzeigersinn.</p>
       </div>
-    </HelpModal>
 
-    <!-- Betting Rules Modal -->
-    <HelpModal
-      :is-open="showBettingRulesModal"
-      title="Einsatzregeln"
-      @close="showBettingRulesModal = false"
-    >
-      <div class="space-y-4 text-sm">
-        <div>
-          <h4 class="font-semibold text-gold-400 mb-1">Positionen</h4>
-          <ul class="text-slate-300 space-y-1">
-            <li><strong class="text-blue-400">SB (Small Blind)</strong> - Muss kleinen Pflichteinsatz zahlen</li>
-            <li><strong class="text-red-400">BB (Big Blind)</strong> - Muss großen Pflichteinsatz zahlen (2x SB)</li>
-          </ul>
-          <p class="text-slate-500 text-xs mt-1">Die Positionen rotieren jede Runde im Uhrzeigersinn.</p>
-        </div>
-
-        <div>
-          <h4 class="font-semibold text-gold-400 mb-1">Aktionen</h4>
-          <ul class="text-slate-300 space-y-1">
-            <li><strong class="text-white">Check</strong> - Kein Einsatz, wenn niemand erhöht hat</li>
-            <li><strong class="text-white">Call</strong> - Den aktuellen Einsatz mitgehen</li>
-            <li><strong class="text-white">Raise</strong> - Den Einsatz erhöhen</li>
-            <li><strong class="text-white">Fold</strong> - Aufgeben und aus der Runde aussteigen</li>
-            <li><strong class="text-white">All-In</strong> - Alle verbleibenden Chips setzen</li>
-          </ul>
-        </div>
-
-        <div>
-          <h4 class="font-semibold text-gold-400 mb-1">Wann endet eine Einsatzrunde?</h4>
-          <p class="text-slate-300">
-            Die Runde endet, wenn alle Spieler entweder:
-          </p>
-          <ul class="text-slate-300 mt-1 list-disc list-inside">
-            <li>Den gleichen Betrag gesetzt haben (Call/Check)</li>
-            <li>Oder gefoldet haben</li>
-          </ul>
-        </div>
-
-        <div>
-          <h4 class="font-semibold text-gold-400 mb-1">All-In Regeln</h4>
-          <p class="text-slate-300">
-            Wer All-In geht, kann nur den Pot bis zu seinem Einsatz gewinnen.
-            Für höhere Einsätze wird ein Side-Pot gebildet.
-          </p>
-        </div>
+      <div class="rules-section">
+        <h4 class="rules-section__title">Aktionen</h4>
+        <ul class="rules-section__list">
+          <li><strong>Check</strong> - Kein Einsatz, wenn niemand erhöht hat</li>
+          <li><strong>Call</strong> - Den aktuellen Einsatz mitgehen</li>
+          <li><strong>Raise</strong> - Den Einsatz erhöhen</li>
+          <li><strong>Fold</strong> - Aufgeben und aussteigen</li>
+          <li><strong>All-In</strong> - Alle Chips setzen</li>
+        </ul>
       </div>
 
-      <div class="mt-6">
-        <CTAButton variant="primary" full-width @click="showBettingRulesModal = false">
-          Verstanden
-        </CTAButton>
+      <div class="rules-section">
+        <h4 class="rules-section__title">Ende der Einsatzrunde</h4>
+        <p class="rules-section__text">
+          Die Runde endet, wenn alle Spieler den gleichen Betrag gesetzt haben oder gefoldet haben.
+        </p>
       </div>
-    </HelpModal>
-  </div>
+    </div>
+
+    <div class="mt-6">
+      <PrimaryButton @click="showBettingRulesModal = false">
+        Verstanden
+      </PrimaryButton>
+    </div>
+  </HelpModal>
 </template>
 
 <style scoped>
-/* Landscape Game Layout */
-.game-layout {
-  @apply w-full max-w-5xl flex flex-col lg:flex-row gap-4 lg:gap-8 items-center;
+/* Header */
+.game-header {
+  @apply flex items-center justify-between gap-4;
 }
 
-.game-content {
-  @apply flex-1 w-full lg:max-w-2xl;
+.game-header__left {
+  @apply flex items-center gap-2;
 }
 
-.game-action {
-  @apply flex-shrink-0 w-full lg:w-auto lg:self-center;
+.game-header__round {
+  @apply text-sm text-slate-400 font-medium;
+  @apply bg-slate-800 px-3 py-1 rounded-full;
 }
 
-@media (min-width: 1024px) {
-  .game-action {
-    min-width: 200px;
-  }
+.game-header__stepper {
+  @apply flex-1 max-w-2xl;
 }
 
-/* Cards row (hints + answer side by side) */
-.cards-row {
-  @apply flex flex-col sm:flex-row gap-2;
+.game-header__right {
+  @apply flex items-center;
 }
 
-.card-item {
-  @apply flex-1 min-w-0;
+.game-header__menu {
+  @apply w-10 h-10 rounded-full;
+  @apply text-danger-500 hover:text-danger-400 hover:bg-danger-500/10;
+  @apply flex items-center justify-center;
+  @apply transition-colors duration-200;
 }
 
-/* Answer display in card format */
-.answer-display-card {
-  font-size: 1.5rem;
-  font-weight: 700;
+/* Main game area */
+.game-main {
+  @apply w-full max-w-2xl mx-auto;
+  @apply flex flex-col items-center;
+}
+
+/* Loading state */
+.game-loading {
+  @apply text-center py-12;
+}
+
+.game-loading__spinner {
+  @apply w-10 h-10 mx-auto mb-3;
+  @apply border-4 border-primary-500 border-t-transparent rounded-full;
+  @apply animate-spin;
+}
+
+.game-loading__text {
+  @apply text-slate-400 text-sm;
+}
+
+/* Game over state */
+.game-over {
+  @apply text-center py-8;
+}
+
+.game-over__icon {
+  @apply text-5xl mb-4;
+}
+
+.game-over__title {
+  @apply text-2xl font-display font-bold text-white mb-2;
+}
+
+.game-over__message {
+  @apply text-slate-400;
+}
+
+/* Phase titles */
+.phase-title {
+  @apply text-xl md:text-2xl font-display font-bold text-white;
+  @apply flex items-center justify-center gap-2;
+  @apply mb-4;
+}
+
+.phase-title--gold {
+  @apply text-gold-400;
+}
+
+.phase-title--primary {
+  @apply text-primary-400;
+}
+
+.phase-title--success {
+  @apply text-success-400;
+}
+
+.phase-title__icon {
+  @apply text-2xl;
+}
+
+.phase-subtitle {
+  @apply text-center text-slate-300 mb-6;
+}
+
+/* Hero card for questions */
+.hero-card {
+  @apply text-center;
+}
+
+/* Skip button */
+.skip-button {
+  @apply mt-4 mx-auto;
+  @apply text-slate-500 hover:text-slate-300;
+  @apply text-sm;
+  @apply flex items-center gap-1;
+  @apply transition-colors duration-200;
+  min-height: 44px;
+}
+
+.skip-button:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+/* Question reminder */
+.question-reminder {
+  @apply p-6 md:p-8;
+  @apply bg-slate-800/80 backdrop-blur rounded-2xl;
+  @apply border border-slate-600/50;
+  @apply text-center;
+}
+
+.question-reminder__label {
+  @apply text-primary-400 font-bold text-sm;
+}
+
+.question-reminder__text {
+  @apply text-xl md:text-2xl lg:text-3xl text-slate-100 mt-2;
+}
+
+/* Compact question */
+.question-compact {
+  @apply text-center text-sm text-slate-400 mb-4;
+  @apply p-3 bg-slate-800/50 rounded-lg;
+}
+
+.question-compact__label {
+  @apply font-semibold text-slate-500;
+}
+
+.question-compact__text {
+  @apply text-slate-300 ml-1;
+}
+
+/* Betting phase */
+.phase-betting {
+  @apply w-full text-center;
+}
+
+.betting-header {
+  @apply mb-4;
+}
+
+.betting-header__emoji {
+  @apply text-3xl;
+}
+
+.betting-header__title {
+  @apply text-xl font-display font-bold text-gold-400;
+}
+
+.betting-header__desc {
+  @apply text-xs text-slate-500;
+}
+
+.betting-table {
+  @apply my-4;
+}
+
+/* Hints */
+.hints-compact {
+  @apply flex flex-wrap justify-center gap-2 mb-4;
+}
+
+.hints-summary {
+  @apply flex flex-wrap justify-center gap-2 mb-4;
+}
+
+.hints-previous {
+  @apply flex flex-wrap justify-center gap-2 mt-4;
+}
+
+.hint-tag {
+  @apply inline-flex items-center gap-1.5;
+  @apply px-3 py-1.5 rounded-full;
+  @apply bg-primary-500/20 text-primary-300;
+  @apply text-sm;
+}
+
+.hint-tag--muted {
+  @apply bg-slate-700/50 text-slate-400;
+}
+
+.hint-tag__number {
+  @apply w-5 h-5 rounded-full;
+  @apply bg-primary-500/30 text-primary-300;
+  @apply flex items-center justify-center;
+  @apply text-xs font-bold;
+}
+
+.hint-tag--muted .hint-tag__number {
+  @apply bg-slate-600 text-slate-400;
+}
+
+/* Hint hero */
+.hint-hero {
+  @apply p-6 rounded-2xl;
+  @apply bg-gradient-to-br from-primary-900/30 to-slate-800;
+  @apply border border-primary-500/50;
+  @apply text-center;
+}
+
+.hint-hero__text {
+  @apply text-xl md:text-2xl text-white font-medium;
+}
+
+/* Answer hero */
+.answer-hero {
+  @apply p-4 md:p-6 rounded-2xl;
+  @apply bg-gradient-to-br from-gold-900/30 to-slate-800;
+  @apply border border-gold-500/50;
+  @apply text-center;
+  @apply mb-4;
+}
+
+.answer-hero--reveal {
+  @apply p-6 md:p-8;
+}
+
+.answer-hero__label {
+  @apply text-gold-400 font-bold text-sm;
+}
+
+.answer-hero__value {
+  @apply text-2xl md:text-3xl font-bold mt-1;
   background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-@media (min-width: 640px) {
-  .answer-display-card {
-    font-size: 1.75rem;
-  }
+.answer-hero__unit {
+  @apply text-lg;
+  -webkit-text-fill-color: #fbbf24;
 }
 
-/* Compact Poker Table */
-.poker-table-container {
-  @apply flex flex-col items-center gap-1 mx-auto;
-  max-width: 320px;
+/* Rules hint button */
+.rules-hint {
+  @apply flex items-center justify-center gap-2;
+  @apply text-xs text-slate-500 hover:text-slate-400;
+  @apply transition-colors duration-200;
+  @apply py-2;
+  min-height: 44px;
 }
 
-.players-top,
-.players-bottom {
-  @apply flex justify-center gap-3;
+.rules-hint__chips {
+  @apply flex gap-1;
 }
 
-.table-felt-compact {
-  @apply w-48 h-10 rounded-lg bg-gradient-to-br from-green-800 to-green-900 border border-amber-900/40 shadow-inner flex items-center justify-center;
+.chip-mini {
+  @apply w-5 h-5 rounded-full;
+  @apply text-[9px] font-bold;
+  @apply flex items-center justify-center;
 }
 
-.player-seat-compact {
-  @apply flex flex-col items-center;
-}
-
-.player-chips-compact {
-  @apply flex gap-0.5 min-h-[16px];
-}
-
-.chip-small {
-  @apply w-4 h-4 rounded-full text-[8px] font-bold flex items-center justify-center;
-}
-
-.chip-sb {
+.chip-mini--sb {
   @apply bg-blue-500 text-white;
 }
 
-.chip-bb {
+.chip-mini--bb {
   @apply bg-red-500 text-white;
 }
 
-.player-avatar-compact {
-  @apply w-8 h-8 rounded-full bg-slate-700 ring-2 ring-slate-600 flex items-center justify-center text-white font-bold text-xs;
+/* Source link */
+.source-link {
+  @apply inline-flex items-center gap-2;
+  @apply text-primary-400 hover:text-primary-300;
+  @apply text-sm;
+  @apply transition-colors duration-200;
+  @apply mb-4;
 }
 
-.player-name-compact {
-  @apply text-[9px] text-slate-400 text-center max-w-[45px] truncate;
+/* Reveal details */
+.reveal-details {
+  @apply text-center;
 }
 
-.player-inactive .player-avatar-compact {
-  @apply opacity-30 grayscale;
+/* Summary phase */
+.phase-summary {
+  @apply w-full space-y-4;
 }
 
-.player-inactive .player-name-compact {
-  @apply text-slate-600 line-through;
+.summary-answer {
+  @apply text-center p-4 bg-slate-800/50 rounded-xl;
 }
 
-.player-inactive .player-chips-compact {
-  @apply opacity-30;
+.summary-answer__question {
+  @apply text-sm text-slate-400 mb-2;
+}
+
+.summary-answer__value {
+  @apply text-xl font-bold text-gold-400;
+}
+
+/* Player management */
+.player-management {
+  @apply flex flex-wrap gap-2 mb-2;
+}
+
+.player-toggle {
+  @apply px-3 py-1.5 rounded-lg text-sm;
+  @apply transition-all duration-200;
+  @apply flex items-center gap-1;
+  @apply bg-slate-700 text-slate-300 hover:bg-slate-600;
+  min-height: 40px;
+}
+
+.player-toggle--inactive {
+  @apply bg-danger-900/30 text-danger-400;
+  @apply border border-danger-500/50;
+}
+
+.player-management__hint {
+  @apply text-slate-500 text-xs;
+}
+
+/* Rules modal content */
+.rules-content {
+  @apply space-y-4 text-sm;
+}
+
+.rules-section__title {
+  @apply font-semibold text-gold-400 mb-1;
+}
+
+.rules-section__list {
+  @apply text-slate-300 space-y-1;
+}
+
+.rules-section__note {
+  @apply text-slate-500 text-xs mt-1;
+}
+
+.rules-section__text {
+  @apply text-slate-300;
 }
 
 /* Animations */
-.animate-scale-in {
-  animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+.phase-intro,
+.phase-guessing,
+.phase-betting,
+.phase-hint,
+.phase-reveal,
+.phase-summary {
+  animation: fadeSlideIn 0.25s ease-out;
 }
 
-@keyframes scaleIn {
-  0% {
-    transform: scale(0.8);
+@keyframes fadeSlideIn {
+  from {
     opacity: 0;
+    transform: translateY(8px);
   }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  100% {
+  to {
     opacity: 1;
     transform: translateY(0);
   }
