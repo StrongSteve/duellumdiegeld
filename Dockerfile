@@ -14,9 +14,12 @@ COPY frontend/ ./
 RUN npm run build
 
 # =============================================================================
-# Stage 2: Build Backend
+# Stage 2: Build Backend (use Debian for glibc compatibility with Ubuntu runtime)
 # =============================================================================
-FROM node:20-alpine AS backend-builder
+FROM node:20-bookworm-slim AS backend-builder
+
+# Install OpenSSL for Prisma
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app/backend
 COPY backend/package*.json ./
@@ -49,6 +52,7 @@ RUN apt-get update && apt-get install -y \
     postgresql-contrib \
     nginx \
     supervisor \
+    openssl \
     && rm -rf /var/lib/apt/lists/*
 
 # =============================================================================
