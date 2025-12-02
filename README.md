@@ -232,7 +232,3 @@ For each question, players must estimate a number. The answer is written down se
 ### Winner
 - Whoever is closest to the correct number wins the pot
 - In case of a tie, the pot is split
-
-## License
-
-MIT
