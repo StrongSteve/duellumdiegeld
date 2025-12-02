@@ -6,20 +6,23 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { LoginRateLimiterService } from './login-rate-limiter.service';
+import { StartupService } from '../startup/startup.service';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret:
-          configService.get<string>('JWT_SECRET') || 'default-secret-change-me',
+      useFactory: async (
+        configService: ConfigService,
+        startupService: StartupService,
+      ) => ({
+        secret: startupService.jwtSecret,
         signOptions: {
           expiresIn: configService.get<string>('JWT_EXPIRATION') || '24h',
         },
       }),
-      inject: [ConfigService],
+      inject: [ConfigService, StartupService],
     }),
   ],
   providers: [AuthService, JwtStrategy, LoginRateLimiterService],

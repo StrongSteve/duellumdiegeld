@@ -27,8 +27,6 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/dasduell?schema=public
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
-      JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-key-change-in-production}
       JWT_EXPIRATION: 24h
       PORT: 3000
       NODE_ENV: production

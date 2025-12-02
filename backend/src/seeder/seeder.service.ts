@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
+import { StartupService } from '../startup/startup.service';
 import { Category, QuestionStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
@@ -21,7 +21,7 @@ export class SeederService implements OnModuleInit {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly configService: ConfigService,
+    private readonly startupService: StartupService,
   ) {}
 
   async onModuleInit() {
@@ -457,32 +457,25 @@ export class SeederService implements OnModuleInit {
       where: { username: 'admin' },
     });
 
-    // Get password from environment variable
-    const adminPassword = this.configService.get<string>('ADMIN_PASSWORD');
-    if (!adminPassword) {
-      this.logger.error(
-        'ADMIN_PASSWORD environment variable is not set! Admin user will not be created.',
-      );
-      return;
-    }
+    // Get dynamically generated password from startup service
+    const adminPassword = this.startupService.adminPassword;
+    const passwordHash = await bcrypt.hash(adminPassword, 12);
 
     if (!existingAdmin) {
-      const passwordHash = await bcrypt.hash(adminPassword, 12);
       await this.prisma.adminUser.create({
         data: {
           username: 'admin',
           passwordHash,
         },
       });
-      this.logger.log('Admin user created with secure password from environment');
+      this.logger.log('Admin user created with generated password');
     } else {
-      // Update password if it changed
-      const passwordHash = await bcrypt.hash(adminPassword, 12);
+      // Update password on every startup
       await this.prisma.adminUser.update({
         where: { username: 'admin' },
         data: { passwordHash },
       });
-      this.logger.log('Admin user password updated from environment');
+      this.logger.log('Admin user password updated');
     }
   }
 
