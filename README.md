@@ -83,9 +83,29 @@ Ein digitaler Spielleiter für das analoge Quiz/Poker-Kartenspiel. Die App wird 
 | GET | `/api/game/session/:id/next-question` | Nächste Frage |
 | POST | `/api/game/session/:id/end` | Spielsitzung beenden |
 
-## Docker Deployment
+## Deployment
 
-### Quick Start
+### Render.com (Kostenlos)
+
+> **POC-Entscheidung**: Für dieses Proof of Concept wird alles in einem einzelnen Docker-Container deployed.
+> Dies ermöglicht kostenloses Hosting auf Render.com. Siehe [ADR-0009](docs/adr/0009-single-container-deployment.md) für Details.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/StrongSteve/duellumdiegeld)
+
+**Manuelles Deployment:**
+1. Fork/Clone dieses Repository
+2. Erstelle einen neuen "Web Service" auf [render.com](https://render.com)
+3. Verbinde dein GitHub Repository
+4. Render erkennt automatisch die `render.yaml` Konfiguration
+5. Klicke "Create Web Service"
+
+**Hinweise:**
+- Der Container enthält PostgreSQL, Backend und Frontend
+- Erster Start dauert ~2-3 Minuten (Build + Migrations)
+- Free Tier: Container schläft nach 15 Min Inaktivität ein (Cold Start ~30-60s)
+- Admin-Credentials erscheinen in den Render Logs
+
+### Docker Compose (Lokal)
 
 ```bash
 # Alle Services starten

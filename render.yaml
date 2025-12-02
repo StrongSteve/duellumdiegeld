@@ -1,0 +1,14 @@
+# Render Blueprint for Das Duell um die Geld
+# Deploy with: Connect GitHub repo to Render and select this blueprint
+# See docs/adr/0009-single-container-deployment.md for architecture decision
+
+services:
+  - type: web
+    name: das-duell-um-die-geld
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /api/questions/count
+    envVars:
+      - key: NODE_ENV
+        value: production
