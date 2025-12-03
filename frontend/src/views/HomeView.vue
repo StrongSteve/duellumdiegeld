@@ -98,7 +98,7 @@ onMounted(async () => {
 
     <!-- Footer -->
     <footer class="home-footer">
-      <p>Ein digitaler Spielleiter für analoge Spieleabende</p>
+      <p>Ein digitaler Spielbegleiter für analoge Spieleabende</p>
     </footer>
   </div>
 </template>

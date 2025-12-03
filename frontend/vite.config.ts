@@ -12,7 +12,7 @@ export default defineConfig({
       manifest: {
         name: 'Das Duell um die Geld',
         short_name: 'Duell',
-        description: 'Digitaler Spielleiter für das Quiz/Poker Kartenspiel',
+        description: 'Digitaler Spielbegleiter für das Quiz/Poker Kartenspiel',
         theme_color: '#1e40af',
         background_color: '#0f172a',
         display: 'standalone',
