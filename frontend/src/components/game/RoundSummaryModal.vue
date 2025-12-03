@@ -33,6 +33,7 @@ const emit = defineEmits<{
 
 // Rating state
 const selectedRating = ref<number>(0)
+const hoverRating = ref<number>(0)
 const hasRated = ref(false)
 
 // Computed: Active players count
@@ -65,9 +66,20 @@ function togglePlayerStatus(player: Player) {
   }
 }
 
+// Handle star hover
+function handleStarHover(rating: number) {
+  if (hasRated.value) return
+  hoverRating.value = rating
+}
+
+function handleStarLeave() {
+  hoverRating.value = 0
+}
+
 // Reset state when modal opens
 function resetState() {
   selectedRating.value = 0
+  hoverRating.value = 0
   hasRated.value = false
 }
 
@@ -90,13 +102,18 @@ watch(() => props.isOpen, (newVal) => {
       <!-- Rating section -->
       <div class="rating-section">
         <span class="rating-label">Frage bewerten</span>
-        <div class="stars-row">
+        <div class="stars-row" @mouseleave="handleStarLeave">
           <button
             v-for="star in 5"
             :key="star"
             class="star-btn"
-            :class="{ 'star-btn--active': star <= selectedRating, 'star-btn--disabled': hasRated }"
+            :class="{
+              'star-btn--active': star <= selectedRating,
+              'star-btn--hover': hoverRating > 0 && star <= hoverRating && !hasRated,
+              'star-btn--disabled': hasRated
+            }"
             @click="handleStarClick(star)"
+            @mouseenter="handleStarHover(star)"
           >
             ★
           </button>
@@ -154,8 +171,8 @@ watch(() => props.isOpen, (newVal) => {
   @apply cursor-pointer;
 }
 
-.star-btn:hover:not(.star-btn--disabled) {
-  @apply text-yellow-300 scale-110;
+.star-btn--hover {
+  @apply text-yellow-300;
 }
 
 .star-btn--active {
