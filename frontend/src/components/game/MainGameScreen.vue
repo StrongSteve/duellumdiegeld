@@ -296,20 +296,22 @@ const isSolutionUnlocked = computed(() => {
   @apply flex flex-col gap-4;
 }
 
-/* Top row: Question + Logo Panel side by side */
+/* Top row: Question + Logo Panel side by side - NEVER wrap */
 .game-top-row {
   @apply flex gap-4 items-stretch;
+  flex-wrap: nowrap;
 }
 
 .question-area {
-  @apply flex-1;
   @apply flex;
+  flex: 1 1 0;
+  min-width: 0; /* Allow shrinking below content size */
 }
 
 .logo-area {
-  @apply flex-shrink-0;
   @apply flex;
-  width: 280px;
+  flex: 0 0 auto;
+  width: 220px;
 }
 
 /* Info cards full width */
@@ -408,7 +410,7 @@ const isSolutionUnlocked = computed(() => {
   }
 
   .logo-area {
-    width: 240px;
+    width: 200px;
   }
 
   .action-row {
