@@ -240,3 +240,25 @@ For each question, players must estimate a number. The answer is written down se
 ### Winner
 - Whoever is closest to the correct number wins the pot
 - In case of a tie, the pot is split
+
+## Documentation
+
+### Architecture
+
+- [Architecture Overview](docs/architecture/overview.md) - System architecture, components, and data flow
+
+### Architecture Decision Records (ADRs)
+
+| ADR | Title |
+|-----|-------|
+| [ADR-0001](docs/adr/0001-use-nestjs.md) | Use NestJS for Backend |
+| [ADR-0002](docs/adr/0002-use-vue3.md) | Use Vue 3 for Frontend |
+| [ADR-0003](docs/adr/0003-use-postgresql.md) | Use PostgreSQL for Database |
+| [ADR-0004](docs/adr/0004-use-prisma.md) | Use Prisma as ORM |
+| [ADR-0005](docs/adr/0005-session-browser-side-only.md) | Browser-Side Session Management |
+| [ADR-0006](docs/adr/0006-no-player-login.md) | No Player Login Required |
+| [ADR-0007](docs/adr/0007-tailwindcss-for-styling.md) | TailwindCSS for Styling |
+| [ADR-0008](docs/adr/0008-captcha-for-submissions.md) | Math Captcha for Submissions |
+| [ADR-0009](docs/adr/0009-single-container-deployment.md) | Single Container Deployment |
+| [ADR-0010](docs/adr/0010-dual-layer-rating-protection.md) | Dual-Layer Rating Protection |
+| [ADR-0011](docs/adr/0011-responsive-design-strategy.md) | Responsive Design Strategy |
