@@ -4,21 +4,17 @@
  *
  * Features:
  * - Gold gradient button
- * - Dynamic label based on game state
+ * - Dynamic label from PHASE_META
  * - Rounded pill shape
  * - Glow effect
  */
 
 import { computed } from 'vue'
-import { GameState } from '@/types'
+import { GamePhase, PHASE_META } from '@/types/gamePhases'
 
 const props = defineProps<{
-  /** Current game state */
-  currentState: GameState
-  /** Current betting round number (1-4) */
-  bettingRound: number
-  /** Whether this is the last round */
-  isLastRound?: boolean
+  /** Current game phase */
+  phase: GamePhase
   /** Whether the button is disabled */
   disabled?: boolean
 }>()
@@ -27,38 +23,8 @@ const emit = defineEmits<{
   click: []
 }>()
 
-// Get the appropriate label based on game state
-const buttonLabel = computed(() => {
-  switch (props.currentState) {
-    case GameState.QUESTION_INTRO:
-      return 'Alle bereit → Schätzen'
-    case GameState.WRITE_GUESSES:
-      return 'Alle haben geschätzt → Einsätze'
-    case GameState.BETTING_ROUND:
-      if (props.bettingRound === 1) {
-        return 'Ersten Hinweis anzeigen'
-      } else if (props.bettingRound === 2) {
-        return 'Zweiten Hinweis anzeigen'
-      } else if (props.bettingRound === 3) {
-        return 'Lösung anzeigen'
-      } else {
-        return 'Zur Auswertung'
-      }
-    case GameState.HINT_REVEAL:
-      return 'Zur Einsatzrunde'
-    case GameState.REVEAL_ANSWER:
-      return 'Letzte Einsatzrunde'
-    case GameState.ROUND_SUMMARY:
-      if (props.isLastRound) {
-        return 'Zum Endergebnis'
-      }
-      return 'Nächste Runde starten'
-    case GameState.GAME_OVER:
-      return 'Spiel beenden'
-    default:
-      return 'Weiter'
-  }
-})
+// Get the button label from PHASE_META
+const buttonLabel = computed(() => PHASE_META[props.phase].buttonText)
 </script>
 
 <template>
@@ -67,7 +33,7 @@ const buttonLabel = computed(() => {
     :disabled="disabled"
     @click="emit('click')"
   >
-    {{ buttonLabel }}
+    <span class="button-text" v-html="buttonLabel.replace('\n', '<br>')"></span>
   </button>
 </template>
 
@@ -80,6 +46,7 @@ const buttonLabel = computed(() => {
   @apply transition-all duration-200;
   @apply shadow-lg;
   @apply leading-tight;
+  @apply text-center;
   background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
   box-shadow: 0 4px 20px rgba(251, 191, 36, 0.3);
   /* Fixed height to support two lines of text */

@@ -3,90 +3,61 @@
  * GameProgressModal - Detailed progress view in modal
  *
  * Features:
- * - Full stepper/timeline view
- * - All phases of a round
- * - Current step highlighted
- * - Completed steps marked
+ * - Full stepper/timeline view of all GamePhases
+ * - Current phase highlighted with glow
+ * - Completed phases marked with checkmark
+ * - Icons for each phase type
  */
 
 import { computed } from 'vue'
-import { GameState } from '@/types'
+import { GamePhase, PHASE_META, PHASE_ORDER } from '@/types/gamePhases'
 import GameModal from './GameModal.vue'
 
 const props = defineProps<{
   isOpen: boolean
-  currentState: GameState
+  phase: GamePhase
   currentRound: number
-  bettingRound: number
-  currentHintIndex: number
 }>()
 
 const emit = defineEmits<{
   close: []
 }>()
 
-// Define all steps in a round
-const allSteps = computed(() => {
-  const state = props.currentState
-  const betting = props.bettingRound
+// Get current phase index
+const currentPhaseIndex = computed(() => PHASE_ORDER.indexOf(props.phase))
 
-  const steps = [
-    { id: 'question', label: 'Frage stellen', state: GameState.QUESTION_INTRO },
-    { id: 'guess', label: 'Schätzen', state: GameState.WRITE_GUESSES },
-    { id: 'bet1', label: 'Einsatzrunde 1', state: GameState.BETTING_ROUND, bettingRound: 1 },
-    { id: 'hint1', label: 'Hinweis 1', state: GameState.HINT_REVEAL, hintIndex: 1 },
-    { id: 'bet2', label: 'Einsatzrunde 2', state: GameState.BETTING_ROUND, bettingRound: 2 },
-    { id: 'hint2', label: 'Hinweis 2', state: GameState.HINT_REVEAL, hintIndex: 2 },
-    { id: 'bet3', label: 'Einsatzrunde 3', state: GameState.BETTING_ROUND, bettingRound: 3 },
-    { id: 'answer', label: 'Auflösung', state: GameState.REVEAL_ANSWER },
-    { id: 'bet4', label: 'Letzte Einsatzrunde', state: GameState.BETTING_ROUND, bettingRound: 4 },
-    { id: 'winner', label: 'Gewinner', state: GameState.ROUND_SUMMARY }
-  ]
-
-  // Calculate current index based on state
-  let currentIndex = 0
-  switch (state) {
-    case GameState.QUESTION_INTRO:
-      currentIndex = 0
-      break
-    case GameState.WRITE_GUESSES:
-      currentIndex = 1
-      break
-    case GameState.BETTING_ROUND:
-      currentIndex = betting === 1 ? 2 : betting === 2 ? 4 : betting === 3 ? 6 : 8
-      break
-    case GameState.HINT_REVEAL:
-      currentIndex = props.currentHintIndex === 1 ? 3 : 5
-      break
-    case GameState.REVEAL_ANSWER:
-      currentIndex = 7
-      break
-    case GameState.ROUND_SUMMARY:
-      currentIndex = 9
-      break
-  }
-
-  return steps.map((step, index) => ({
-    ...step,
-    isCurrent: index === currentIndex,
-    isCompleted: index < currentIndex,
-    isPending: index > currentIndex
+// Build timeline steps from PHASE_ORDER
+const timelineSteps = computed(() => {
+  return PHASE_ORDER.map((phase, index) => ({
+    phase,
+    label: PHASE_META[phase].shortName,
+    icon: PHASE_META[phase].icon,
+    isCompleted: index < currentPhaseIndex.value,
+    isCurrent: index === currentPhaseIndex.value,
+    isPending: index > currentPhaseIndex.value
   }))
 })
+
+// Current phase description
+const currentPhaseDescription = computed(() => PHASE_META[props.phase].fortschrittText)
 </script>
 
 <template>
   <GameModal :is-open="isOpen" title="Fortschritt" @close="emit('close')">
-    <!-- Round counter -->
-    <div class="round-counter">
-      <span class="round-counter__current">Runde {{ currentRound }}</span>
+    <!-- Header with round and current phase -->
+    <div class="progress-header">
+      <span class="round-badge">Runde {{ currentRound }}</span>
+      <div class="current-phase-info">
+        <span class="current-phase-label">Aktuelle Phase:</span>
+        <span class="current-phase-text">{{ currentPhaseDescription }}</span>
+      </div>
     </div>
 
-    <!-- Timeline -->
+    <!-- Visual Timeline -->
     <div class="progress-timeline">
       <div
-        v-for="(step, index) in allSteps"
-        :key="step.id"
+        v-for="(step, index) in timelineSteps"
+        :key="step.phase"
         class="timeline-step"
         :class="{
           'timeline-step--completed': step.isCompleted,
@@ -97,16 +68,23 @@ const allSteps = computed(() => {
         <!-- Step indicator -->
         <div class="timeline-step__indicator">
           <div class="timeline-step__dot">
-            <svg v-if="step.isCompleted" class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+            <!-- Checkmark for completed -->
+            <svg v-if="step.isCompleted" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
             </svg>
-            <span v-else-if="step.isCurrent" class="timeline-step__pulse"></span>
+            <!-- Icon for current -->
+            <span v-else-if="step.isCurrent" class="timeline-step__icon">{{ step.icon }}</span>
+            <!-- Icon for pending (dimmed) -->
+            <span v-else class="timeline-step__icon timeline-step__icon--dim">{{ step.icon }}</span>
           </div>
-          <div v-if="index < allSteps.length - 1" class="timeline-step__line"></div>
+          <!-- Connecting line -->
+          <div v-if="index < timelineSteps.length - 1" class="timeline-step__line"></div>
         </div>
 
         <!-- Step label -->
-        <span class="timeline-step__label">{{ step.label }}</span>
+        <div class="timeline-step__content">
+          <span class="timeline-step__label">{{ step.label }}</span>
+        </div>
       </div>
     </div>
 
@@ -120,21 +98,38 @@ const allSteps = computed(() => {
 </template>
 
 <style scoped>
-.round-counter {
-  @apply text-center mb-6;
+.progress-header {
+  @apply mb-6;
+  @apply text-center;
 }
 
-.round-counter__current {
-  @apply text-2xl font-bold text-primary-400;
+.round-badge {
+  @apply inline-block px-4 py-1.5;
+  @apply bg-primary-500/20 text-primary-300;
+  @apply rounded-full text-sm font-semibold;
+  @apply mb-3;
 }
 
+.current-phase-info {
+  @apply flex flex-col gap-1;
+}
+
+.current-phase-label {
+  @apply text-xs text-slate-500 uppercase tracking-wider;
+}
+
+.current-phase-text {
+  @apply text-lg font-semibold text-white;
+}
+
+/* Timeline */
 .progress-timeline {
   @apply space-y-0;
 }
 
 .timeline-step {
   @apply flex items-start gap-3;
-  @apply py-1.5;
+  @apply py-2;
 }
 
 .timeline-step__indicator {
@@ -143,49 +138,60 @@ const allSteps = computed(() => {
 }
 
 .timeline-step__dot {
-  @apply w-6 h-6 rounded-full;
+  @apply w-8 h-8 rounded-full;
   @apply flex items-center justify-center;
   @apply transition-all duration-200;
+  @apply text-sm;
 }
 
 .timeline-step--completed .timeline-step__dot {
-  @apply bg-success-500 text-white;
+  @apply bg-green-500/20 text-green-400;
+  @apply border-2 border-green-500/50;
 }
 
 .timeline-step--current .timeline-step__dot {
-  @apply bg-primary-500 text-white;
-  @apply ring-4 ring-primary-500/30;
+  @apply bg-gold-500/20 text-gold-400;
+  @apply border-2 border-gold-400;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
 }
 
 .timeline-step--pending .timeline-step__dot {
-  @apply bg-slate-700 text-slate-500;
+  @apply bg-slate-800 text-slate-500;
+  @apply border-2 border-slate-700;
 }
 
-.timeline-step__pulse {
-  @apply w-2 h-2 rounded-full bg-white;
-  animation: pulse 1.5s ease-in-out infinite;
+.timeline-step__icon {
+  @apply text-base;
+}
+
+.timeline-step__icon--dim {
+  @apply opacity-40;
 }
 
 .timeline-step__line {
-  @apply w-0.5 h-4 mt-1;
+  @apply w-0.5 h-6 mt-1;
   @apply transition-colors duration-200;
 }
 
 .timeline-step--completed .timeline-step__line {
-  @apply bg-success-500;
+  @apply bg-green-500/50;
 }
 
 .timeline-step--current .timeline-step__line {
-  @apply bg-gradient-to-b from-primary-500 to-slate-700;
+  @apply bg-gradient-to-b from-gold-400/50 to-slate-700;
 }
 
 .timeline-step--pending .timeline-step__line {
   @apply bg-slate-700;
 }
 
+.timeline-step__content {
+  @apply flex-1;
+  @apply pt-1.5;
+}
+
 .timeline-step__label {
   @apply text-sm;
-  @apply pt-0.5;
 }
 
 .timeline-step--completed .timeline-step__label {
@@ -193,7 +199,7 @@ const allSteps = computed(() => {
 }
 
 .timeline-step--current .timeline-step__label {
-  @apply text-white font-semibold;
+  @apply text-gold-300 font-semibold;
 }
 
 .timeline-step--pending .timeline-step__label {
@@ -207,16 +213,5 @@ const allSteps = computed(() => {
   @apply rounded-lg;
   @apply transition-colors duration-200;
   min-height: 44px;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.5;
-    transform: scale(0.8);
-  }
 }
 </style>

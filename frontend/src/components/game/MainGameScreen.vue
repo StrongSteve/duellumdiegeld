@@ -10,8 +10,9 @@
  * Optimized for iPad landscape (1024x768)
  */
 
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { GameState, type Player, type Hint } from '@/types'
+import { GamePhase, isBettingPhase } from '@/types/gamePhases'
 import GameQuestionCard from './GameQuestionCard.vue'
 import GameHintCard from './GameHintCard.vue'
 import GameSolutionCard from './GameSolutionCard.vue'
@@ -23,10 +24,14 @@ import GamePlayersCard from './GamePlayersCard.vue'
 import GamePlayersModal from './GamePlayersModal.vue'
 import GameLogoPanel from './GameLogoPanel.vue'
 import GameNextActionButton from './GameNextActionButton.vue'
+import BettingOverlay from './BettingOverlay.vue'
+import ShowdownOverlay from './ShowdownOverlay.vue'
 
 const props = defineProps<{
   /** Current game state */
   currentState: GameState
+  /** Current game phase (new state machine) */
+  phase: GamePhase
   /** Current question text */
   questionText: string
   /** Available hints (max 2) */
@@ -61,12 +66,69 @@ const emit = defineEmits<{
   nextAction: []
   endGame: []
   rateQuestion: [rating: number]
+  showdownDismissed: []
 }>()
 
 // Modal states
 const showProgressModal = ref(false)
 const showRulesModal = ref(false)
 const showPlayersModal = ref(false)
+
+// Betting overlay state
+const showBettingOverlay = ref(false)
+
+// Showdown overlay state
+const showShowdownOverlay = ref(false)
+
+// Track previous phase for comparison (start as null, not set on immediate)
+const previousPhase = ref<GamePhase | null>(null)
+const isInitialized = ref(false)
+
+// Watch for phase changes to show overlays
+watch(() => props.phase, (newPhase) => {
+  // On first run, just record the phase without showing overlays
+  if (!isInitialized.value) {
+    previousPhase.value = newPhase
+    isInitialized.value = true
+    return
+  }
+
+  const oldPhase = previousPhase.value
+
+  // Always update previous phase BEFORE any early returns
+  const shouldUpdatePrevious = true
+
+  // Reset all overlays when starting a new round (going back to question phase)
+  if (newPhase === GamePhase.FrageSchaetzung) {
+    showBettingOverlay.value = false
+    showShowdownOverlay.value = false
+    if (shouldUpdatePrevious) previousPhase.value = newPhase
+    return
+  }
+
+  // Show betting overlay when entering any betting phase (from a non-betting phase)
+  if (isBettingPhase(newPhase) && (oldPhase === null || !isBettingPhase(oldPhase))) {
+    showBettingOverlay.value = true
+  }
+
+  // Show showdown overlay when entering showdown phase
+  if (newPhase === GamePhase.Showdown && oldPhase !== GamePhase.Showdown) {
+    showShowdownOverlay.value = true
+  }
+
+  if (shouldUpdatePrevious) previousPhase.value = newPhase
+}, { immediate: true })
+
+// Handle betting overlay dismiss
+function dismissBettingOverlay() {
+  showBettingOverlay.value = false
+}
+
+// Handle showdown overlay dismiss
+function dismissShowdownOverlay() {
+  showShowdownOverlay.value = false
+  emit('showdownDismissed')
+}
 
 // Compute hint states
 const hint1 = computed(() => props.hints[0] || null)
@@ -138,10 +200,7 @@ const isSolutionUnlocked = computed(() => {
         <!-- Bottom: Info cards row -->
         <div class="info-cards-row">
           <GameProgressCard
-            :current-state="currentState"
-            :current-round="currentRound"
-            :betting-round="bettingRound"
-            :current-hint-index="currentHintIndex"
+            :phase="phase"
             @click="showProgressModal = true"
           />
           <GameRulesCard @click="showRulesModal = true" />
@@ -163,8 +222,7 @@ const isSolutionUnlocked = computed(() => {
           </button>
           <div class="action-area">
             <GameNextActionButton
-              :current-state="currentState"
-              :betting-round="bettingRound"
+              :phase="phase"
               :disabled="isLoading"
               @click="emit('nextAction')"
             />
@@ -177,10 +235,8 @@ const isSolutionUnlocked = computed(() => {
     <!-- Modals -->
     <GameProgressModal
       :is-open="showProgressModal"
-      :current-state="currentState"
+      :phase="phase"
       :current-round="currentRound"
-      :betting-round="bettingRound"
-      :current-hint-index="currentHintIndex"
       @close="showProgressModal = false"
     />
 
@@ -195,6 +251,25 @@ const isSolutionUnlocked = computed(() => {
       :small-blind-name="smallBlindName"
       :big-blind-name="bigBlindName"
       @close="showPlayersModal = false"
+    />
+
+    <!-- Betting Overlay -->
+    <BettingOverlay
+      :visible="showBettingOverlay"
+      :question-text="questionText"
+      :hints="hints"
+      :revealed-hint-count="revealedHintCount"
+      :is-last-betting-round="phase === GamePhase.LetzteEinsatzrunde"
+      :solution-text="solutionText"
+      @dismiss="dismissBettingOverlay"
+    />
+
+    <!-- Showdown Overlay -->
+    <ShowdownOverlay
+      :visible="showShowdownOverlay"
+      :question-text="questionText"
+      :solution-text="solutionText"
+      @dismiss="dismissShowdownOverlay"
     />
   </div>
 </template>

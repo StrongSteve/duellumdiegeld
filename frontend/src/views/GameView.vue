@@ -25,6 +25,7 @@ const showRoundSummaryModal = ref(false)
 // Computed from store
 const currentQuestion = computed(() => gameStore.currentQuestion)
 const currentState = computed(() => gameStore.currentState)
+const currentGamePhase = computed(() => gameStore.currentGamePhase)
 const revealedHints = computed(() => gameStore.revealedHints)
 const roundNumber = computed(() => gameStore.roundNumber)
 const settings = computed(() => gameStore.settings)
@@ -82,7 +83,16 @@ function cancelEndGame() {
 
 async function startNextRound() {
   showRoundSummaryModal.value = false
+  // Reset showdown flag before loading new round to prevent stale overlay
+  showdownOverlayShown.value = false
   await gameStore.nextRound()
+}
+
+// Handle closing round summary modal with X button - go to start screen
+function handleRoundSummaryClose() {
+  showRoundSummaryModal.value = false
+  gameStore.endGame()
+  router.push('/')
 }
 
 // Handle player elimination
@@ -109,12 +119,24 @@ async function handleRateQuestion(rating: number) {
   }
 }
 
-// Watch for ROUND_SUMMARY state to show modal
+// Flag to track if showdown overlay was shown
+const showdownOverlayShown = ref(false)
+
+// Watch for ROUND_SUMMARY state - don't show modal immediately, wait for showdown overlay to be dismissed
 watch(currentState, (newState) => {
   if (newState === GameState.ROUND_SUMMARY) {
-    showRoundSummaryModal.value = true
+    // Set flag that showdown overlay should be shown
+    showdownOverlayShown.value = true
   }
 })
+
+// Called when showdown overlay is dismissed
+function handleShowdownDismissed() {
+  if (showdownOverlayShown.value) {
+    showdownOverlayShown.value = false
+    showRoundSummaryModal.value = true
+  }
+}
 </script>
 
 <template>
@@ -139,6 +161,7 @@ watch(currentState, (newState) => {
     <MainGameScreen
       v-else-if="currentQuestion"
       :current-state="currentState"
+      :phase="currentGamePhase"
       :question-text="currentQuestion.questionText"
       :hints="availableHints"
       :revealed-hint-count="revealedHints.length"
@@ -156,6 +179,7 @@ watch(currentState, (newState) => {
       @next-action="handleNextAction"
       @end-game="confirmEndGame"
       @rate-question="handleRateQuestion"
+      @showdown-dismissed="handleShowdownDismissed"
     />
 
     <!-- End Game Confirmation Modal -->
@@ -183,7 +207,7 @@ watch(currentState, (newState) => {
       :players="settings.players"
       :round-number="roundNumber"
       :question-id="currentQuestion?.id || ''"
-      @close="showRoundSummaryModal = false"
+      @close="handleRoundSummaryClose"
       @continue-game="startNextRound"
       @eliminate-player="handleEliminatePlayer"
       @reactivate-player="handleReactivatePlayer"

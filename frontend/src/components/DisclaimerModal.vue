@@ -19,56 +19,44 @@ function accept() {
     <Transition name="modal">
       <div v-if="isVisible" class="modal-overlay">
         <div class="modal-container">
-          <!-- Header with TV Icon -->
-          <div class="modal-header">
-            <div class="tv-icon">📺</div>
-            <h2 class="modal-title">Rechtlicher Hinweis</h2>
-          </div>
+          <!-- TV Icon -->
+          <div class="tv-icon">📺</div>
+          <h2 class="modal-title">Rechtlicher Hinweis</h2>
 
-          <!-- Content -->
-          <div class="modal-content">
-            <div class="copyright-section">
-              <h3>Original-Format</h3>
-              <p>
-                <strong>„Das Duell um die Geld"</strong> ist eine TV-Show von
-                <strong>ProSieben</strong> und <strong>Joyn</strong>, moderiert von
-                Joko Winterscheidt und Klaas Heufer-Umlauf.
-              </p>
-              <p class="copyright-notice">
-                © Seven.One Entertainment Group GmbH<br>
-                Produziert von Florida Entertainment GmbH
-              </p>
-            </div>
+          <!-- Original Format Section -->
+          <h3 class="section-title">Original-Format</h3>
+          <p class="modal-text">
+            <strong>„Das Duell um die Geld"</strong> ist eine TV-Show von
+            <strong>ProSieben</strong> und <strong>Joyn</strong>, moderiert von
+            Joko Winterscheidt und Klaas Heufer-Umlauf.
+          </p>
+          <p class="copyright-notice">
+            © Seven.One Entertainment Group GmbH · Produziert von Florida Entertainment GmbH
+          </p>
 
-            <div class="divider"></div>
+          <div class="divider"></div>
 
-            <div class="disclaimer-section">
-              <h3>Über diese Anwendung</h3>
-              <p>
-                Diese Web-App ist ein <strong>Proof of Concept (POC)</strong> und wurde erstellt,
-                um die Möglichkeiten von <strong>AI-gestützter Softwareentwicklung</strong> mit
-                <strong>Claude Code</strong> zu demonstrieren.
-              </p>
-              <p>
-                Es handelt sich um ein <strong>nicht-kommerzielles Fan-Projekt</strong> ohne
-                jegliche Gewinnabsicht. Alle Rechte am Original-Format, Namen und Konzept
-                verbleiben bei den rechtmäßigen Inhabern.
-              </p>
-            </div>
+          <!-- About Section -->
+          <h3 class="section-title">Über diese Anwendung</h3>
+          <p class="modal-text">
+            Diese Web-App ist ein <strong>Proof of Concept (POC)</strong> und wurde erstellt,
+            um die Möglichkeiten von <strong>AI-gestützter Softwareentwicklung</strong> mit
+            <strong>Claude Code</strong> zu demonstrieren.
+          </p>
+          <p class="modal-text">
+            Es handelt sich um ein <strong>nicht-kommerzielles Fan-Projekt</strong> ohne
+            jegliche Gewinnabsicht. Alle Rechte am Original-Format, Namen und Konzept
+            verbleiben bei den rechtmäßigen Inhabern.
+          </p>
 
-            <div class="links-section">
-              <a href="https://www.joyn.de/serien/das-duell-um-die-geld" target="_blank" rel="noopener noreferrer">
-                Original auf Joyn ansehen →
-              </a>
-            </div>
-          </div>
+          <a class="joyn-link" href="https://www.joyn.de/serien/das-duell-um-die-geld" target="_blank" rel="noopener noreferrer">
+            Original auf Joyn ansehen →
+          </a>
 
-          <!-- Footer -->
-          <div class="modal-footer">
-            <CTAButton variant="gold" size="lg" @click="accept">
-              Verstanden – Los geht's!
-            </CTAButton>
-          </div>
+          <!-- Button -->
+          <CTAButton variant="gold" size="lg" class="accept-btn" @click="accept">
+            Verstanden – Los geht's!
+          </CTAButton>
         </div>
       </div>
     </Transition>
@@ -94,12 +82,11 @@ function accept() {
 .modal-container {
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   border-radius: 1.5rem;
-  max-width: 540px;
+  max-width: 700px;
   width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
+  padding: 2rem 2.5rem;
+  text-align: center;
   box-shadow:
-    0 0 0 1px rgba(251, 191, 36, 0.3),
     0 25px 50px -12px rgba(0, 0, 0, 0.5),
     0 0 100px rgba(251, 191, 36, 0.1);
   animation: modalAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -116,12 +103,6 @@ function accept() {
   }
 }
 
-.modal-header {
-  text-align: center;
-  padding: 2rem 2rem 1rem;
-  border-bottom: 1px solid rgba(251, 191, 36, 0.2);
-}
-
 .tv-icon {
   font-size: 3rem;
   margin-bottom: 0.5rem;
@@ -135,20 +116,10 @@ function accept() {
   color: #fbbf24;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin: 0;
+  margin: 0 0 1.5rem 0;
 }
 
-.modal-content {
-  padding: 1.5rem 2rem;
-}
-
-.copyright-section,
-.disclaimer-section {
-  margin-bottom: 1rem;
-}
-
-.copyright-section h3,
-.disclaimer-section h3 {
+.section-title {
   font-family: 'Oswald', sans-serif;
   font-size: 1rem;
   font-weight: 600;
@@ -156,30 +127,27 @@ function accept() {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin: 0 0 0.75rem 0;
+  text-align: left;
 }
 
-.modal-content p {
+.modal-text {
   color: #cbd5e1;
   font-size: 0.95rem;
   line-height: 1.6;
   margin: 0 0 0.75rem 0;
+  text-align: left;
 }
 
-.modal-content p:last-child {
-  margin-bottom: 0;
-}
-
-.modal-content strong {
+.modal-text strong {
   color: #f1f5f9;
 }
 
 .copyright-notice {
-  background: rgba(251, 191, 36, 0.1);
-  border-left: 3px solid #fbbf24;
-  padding: 0.75rem 1rem;
-  border-radius: 0 0.5rem 0.5rem 0;
-  font-size: 0.875rem !important;
-  color: #94a3b8 !important;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-style: italic;
+  margin: 0 0 0.5rem 0;
+  text-align: left;
 }
 
 .divider {
@@ -188,26 +156,22 @@ function accept() {
   margin: 1.25rem 0;
 }
 
-.links-section {
-  text-align: center;
-  margin-top: 1rem;
-}
-
-.links-section a {
+.joyn-link {
+  display: block;
   color: #fbbf24;
   font-size: 0.875rem;
   text-decoration: none;
   transition: all 0.2s;
+  margin: 1.25rem 0;
 }
 
-.links-section a:hover {
+.joyn-link:hover {
   color: #fcd34d;
   text-decoration: underline;
 }
 
-.modal-footer {
-  padding: 1.5rem 2rem 2rem;
-  text-align: center;
+.accept-btn {
+  margin-top: 1rem;
 }
 
 /* Transitions */
@@ -224,23 +188,5 @@ function accept() {
 .modal-enter-from .modal-container,
 .modal-leave-to .modal-container {
   transform: scale(0.9);
-}
-
-/* Scrollbar styling */
-.modal-container::-webkit-scrollbar {
-  width: 6px;
-}
-
-.modal-container::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.modal-container::-webkit-scrollbar-thumb {
-  background: rgba(251, 191, 36, 0.3);
-  border-radius: 3px;
-}
-
-.modal-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(251, 191, 36, 0.5);
 }
 </style>

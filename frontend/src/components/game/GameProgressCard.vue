@@ -4,82 +4,51 @@
  *
  * Features:
  * - Stepper icon
- * - Mini progress visualization
- * - Round counter
+ * - Mini progress visualization with 3 dots
+ * - Shows current phase text from PHASE_META
  * - Clickable to open modal
  */
 
 import { computed } from 'vue'
-import { GameState } from '@/types'
+import { GamePhase, PHASE_META, PHASE_ORDER } from '@/types/gamePhases'
 
 const props = defineProps<{
-  /** Current game state */
-  currentState: GameState
-  /** Current round number */
-  currentRound: number
-  /** Current betting round (1-4) */
-  bettingRound: number
-  /** Current hint index (0-2) */
-  currentHintIndex: number
+  /** Current game phase */
+  phase: GamePhase
 }>()
 
 const emit = defineEmits<{
   click: []
 }>()
 
-// Compute a simplified step representation
-const stepInfo = computed(() => {
-  const state = props.currentState
-  const betting = props.bettingRound
-  const hint = props.currentHintIndex
+// Get phase index for navigation
+const phaseIndex = computed(() => PHASE_ORDER.indexOf(props.phase))
 
-  // Simplified 3-step view: Previous, Current, Next
-  let currentLabel = 'Frage'
-  let previousLabel = ''
-  let nextLabel = 'Schätzen'
-
-  switch (state) {
-    case GameState.QUESTION_INTRO:
-      currentLabel = 'Frage'
-      previousLabel = ''
-      nextLabel = 'Schätzen'
-      break
-    case GameState.WRITE_GUESSES:
-      currentLabel = 'Schätzen'
-      previousLabel = 'Frage'
-      nextLabel = 'Einsätze'
-      break
-    case GameState.BETTING_ROUND:
-      currentLabel = `Einsätze ${betting}`
-      previousLabel = betting === 1 ? 'Schätzen' : betting === 4 ? 'Auflösung' : `Hinweis ${betting - 1}`
-      nextLabel = betting === 4 ? 'Gewinner' : betting < 3 ? `Hinweis ${betting}` : 'Auflösung'
-      break
-    case GameState.HINT_REVEAL:
-      currentLabel = `Hinweis ${hint}`
-      previousLabel = `Einsätze ${hint}`
-      nextLabel = `Einsätze ${hint + 1}`
-      break
-    case GameState.REVEAL_ANSWER:
-      currentLabel = 'Auflösung'
-      previousLabel = 'Einsätze 3'
-      nextLabel = 'Einsätze 4'
-      break
-    case GameState.ROUND_SUMMARY:
-      currentLabel = 'Gewinner'
-      previousLabel = 'Einsätze 4'
-      nextLabel = 'Nächste Runde'
-      break
-  }
-
-  return { previousLabel, currentLabel, nextLabel }
+// Get previous, current, next phases
+const previousPhase = computed(() => {
+  const idx = phaseIndex.value
+  return idx > 0 ? PHASE_ORDER[idx - 1] : null
 })
+
+const nextPhase = computed(() => {
+  const idx = phaseIndex.value
+  return idx < PHASE_ORDER.length - 1 ? PHASE_ORDER[idx + 1] : null
+})
+
+// Get display names
+const previousName = computed(() => previousPhase.value ? PHASE_META[previousPhase.value].shortName : '')
+const currentName = computed(() => PHASE_META[props.phase].shortName)
+const nextName = computed(() => nextPhase.value ? PHASE_META[nextPhase.value].shortName : 'Neue Runde')
+
+// Get current phase description
+const phaseDescription = computed(() => PHASE_META[props.phase].fortschrittText)
 </script>
 
 <template>
   <button class="progress-card" @click="emit('click')">
     <!-- Icon -->
     <div class="progress-card__icon">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
@@ -89,21 +58,21 @@ const stepInfo = computed(() => {
     <div class="progress-card__content">
       <span class="progress-card__label">Fortschritt</span>
 
-      <!-- Mini stepper -->
-      <div class="progress-card__stepper">
-        <span v-if="stepInfo.previousLabel" class="progress-card__step progress-card__step--past">
-          {{ stepInfo.previousLabel }}
-        </span>
-        <span class="progress-card__step progress-card__step--current">
-          {{ stepInfo.currentLabel }}
-        </span>
-        <span class="progress-card__step progress-card__step--next">
-          {{ stepInfo.nextLabel }}
-        </span>
-      </div>
+      <!-- Current phase description -->
+      <p class="progress-card__description">{{ phaseDescription }}</p>
 
-      <!-- Skeleton bar -->
-      <div class="progress-card__skeleton"></div>
+      <!-- Mini 3-dot stepper -->
+      <div class="progress-card__dots">
+        <div class="dot dot--past" :title="previousName">
+          <span v-if="previousName" class="dot-label">{{ previousName }}</span>
+        </div>
+        <div class="dot dot--current" :title="currentName">
+          <span class="dot-label">{{ currentName }}</span>
+        </div>
+        <div class="dot dot--next" :title="nextName">
+          <span class="dot-label">{{ nextName }}</span>
+        </div>
+      </div>
     </div>
   </button>
 </template>
@@ -123,43 +92,72 @@ const stepInfo = computed(() => {
 
 .progress-card__icon {
   @apply flex-shrink-0;
-  @apply text-slate-400;
+  @apply text-primary-400;
+  @apply mt-0.5;
 }
 
 .progress-card__content {
   @apply flex-1 min-w-0;
 }
 
-.progress-card__label {
-  @apply text-sm font-semibold text-slate-300;
-  @apply block mb-1.5;
+.progress-card__header {
+  @apply flex items-center justify-between;
+  @apply mb-1;
 }
 
-.progress-card__stepper {
-  @apply flex items-center gap-1;
-  @apply text-[10px];
+.progress-card__label {
+  @apply text-sm font-semibold text-slate-300;
+}
+
+.progress-card__description {
+  @apply text-xs text-primary-300;
   @apply mb-2;
 }
 
-.progress-card__step {
-  @apply px-1.5 py-0.5 rounded;
+/* Mini 3-dot stepper */
+.progress-card__dots {
+  @apply flex items-center gap-2;
 }
 
-.progress-card__step--past {
-  @apply bg-slate-700/50 text-slate-500;
+.dot {
+  @apply flex flex-col items-center gap-1;
+  @apply flex-1;
 }
 
-.progress-card__step--current {
-  @apply bg-primary-500/30 text-primary-300 font-medium;
+.dot::before {
+  content: '';
+  @apply w-2.5 h-2.5 rounded-full;
+  @apply transition-all duration-200;
 }
 
-.progress-card__step--next {
-  @apply bg-slate-700/30 text-slate-500;
+.dot--past::before {
+  @apply bg-slate-600;
 }
 
-.progress-card__skeleton {
-  @apply h-1 rounded-full;
-  @apply bg-gradient-to-r from-primary-500/50 via-slate-600 to-slate-700;
-  @apply w-full;
+.dot--current::before {
+  @apply bg-primary-400;
+  box-shadow: 0 0 8px rgba(var(--color-primary-400), 0.5);
+}
+
+.dot--next::before {
+  @apply bg-slate-700;
+}
+
+.dot-label {
+  @apply text-[9px] leading-tight;
+  @apply text-center;
+  @apply max-w-full truncate;
+}
+
+.dot--past .dot-label {
+  @apply text-slate-500;
+}
+
+.dot--current .dot-label {
+  @apply text-primary-300 font-medium;
+}
+
+.dot--next .dot-label {
+  @apply text-slate-500;
 }
 </style>

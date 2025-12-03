@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { questionsApi, gameApi } from '@/services/api'
 import { GameState, type Question, type GameSettings, type Player } from '@/types'
+import { GamePhase } from '@/types/gamePhases'
 import { getPlayedQuestionIds, addPlayedQuestionId, clearPlayedQuestions } from '@/utils/cookies'
 
 // LocalStorage Keys
@@ -130,6 +131,36 @@ export const useGameStore = defineStore('game', () => {
     }
   })
 
+  // Computed: Current GamePhase (frontend-only mapping)
+  const currentGamePhase = computed<GamePhase>(() => {
+    switch (currentState.value) {
+      case GameState.QUESTION_INTRO:
+      case GameState.WRITE_GUESSES:
+        return GamePhase.FrageSchaetzung
+      case GameState.BETTING_ROUND:
+        switch (bettingRoundNumber.value) {
+          case 1:
+            return GamePhase.ErsteEinsatzrunde
+          case 2:
+            return GamePhase.ZweiteEinsatzrunde
+          case 3:
+            return GamePhase.DritteEinsatzrunde
+          case 4:
+            return GamePhase.LetzteEinsatzrunde
+          default:
+            return GamePhase.ErsteEinsatzrunde
+        }
+      case GameState.HINT_REVEAL:
+        return currentHintIndex.value === 1 ? GamePhase.ErsterHinweis : GamePhase.ZweiterHinweis
+      case GameState.REVEAL_ANSWER:
+        return GamePhase.Loesung
+      case GameState.ROUND_SUMMARY:
+        return GamePhase.Showdown
+      default:
+        return GamePhase.FrageSchaetzung
+    }
+  })
+
   // Helper: Load from LocalStorage
   function loadFromStorage<T>(key: string): T | null {
     try {
@@ -254,9 +285,8 @@ export const useGameStore = defineStore('game', () => {
   function nextStep() {
     switch (currentState.value) {
       case GameState.QUESTION_INTRO:
-        currentState.value = GameState.WRITE_GUESSES
-        break
       case GameState.WRITE_GUESSES:
+        // Both states are part of FrageSchaetzung phase, go directly to first betting round
         bettingRoundNumber.value = 1
         currentState.value = GameState.BETTING_ROUND
         break
@@ -392,6 +422,7 @@ export const useGameStore = defineStore('game', () => {
     hasMoreHints,
     gameSteps,
     currentStepIndex,
+    currentGamePhase,
 
     // Actions
     updateSettings,
