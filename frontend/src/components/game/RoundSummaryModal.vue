@@ -87,22 +87,19 @@ watch(() => props.isOpen, (newVal) => {
     @close="emit('close')"
   >
     <div class="round-summary">
-      <!-- Header with round badge and rating inline -->
-      <div class="header-row">
-        <span class="round-badge">Runde {{ roundNumber }}</span>
-        <div class="rating-inline">
-          <span class="rating-label">Bewertung:</span>
-          <div class="stars-row">
-            <button
-              v-for="star in 5"
-              :key="star"
-              class="star-btn"
-              :class="{ 'star-btn--active': star <= selectedRating, 'star-btn--disabled': hasRated }"
-              @click="handleStarClick(star)"
-            >
-              ★
-            </button>
-          </div>
+      <!-- Rating section -->
+      <div class="rating-section">
+        <span class="rating-label">Frage bewerten</span>
+        <div class="stars-row">
+          <button
+            v-for="star in 5"
+            :key="star"
+            class="star-btn"
+            :class="{ 'star-btn--active': star <= selectedRating, 'star-btn--disabled': hasRated }"
+            @click="handleStarClick(star)"
+          >
+            ★
+          </button>
         </div>
       </div>
 
@@ -133,27 +130,17 @@ watch(() => props.isOpen, (newVal) => {
 
 <style scoped>
 .round-summary {
-  @apply flex flex-col gap-4;
+  @apply flex flex-col gap-5;
 }
 
-/* Header row with round badge and rating */
-.header-row {
+/* Rating section */
+.rating-section {
   @apply flex items-center justify-between;
   @apply flex-wrap gap-3;
 }
 
-.round-badge {
-  @apply inline-block px-4 py-1.5;
-  @apply bg-primary-500/20 text-primary-300;
-  @apply rounded-full text-sm font-semibold;
-}
-
-.rating-inline {
-  @apply flex items-center gap-2;
-}
-
 .rating-label {
-  @apply text-sm text-slate-400;
+  @apply text-base font-medium text-slate-300;
 }
 
 .stars-row {
@@ -181,11 +168,11 @@ watch(() => props.isOpen, (newVal) => {
 
 /* Players section */
 .players-section {
-  @apply space-y-2;
+  @apply space-y-3;
 }
 
 .section-hint {
-  @apply text-xs text-slate-500;
+  @apply text-sm text-slate-400;
 }
 
 .players-grid {
