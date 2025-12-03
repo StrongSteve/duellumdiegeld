@@ -52,6 +52,22 @@ async function fetchApi<T>(
   return response.json()
 }
 
+// Health check API
+export const healthApi = {
+  check: async (): Promise<boolean> => {
+    try {
+      const response = await fetch(`${API_BASE}/health`, {
+        method: 'GET',
+        // Long timeout for cold starts on Render
+        signal: AbortSignal.timeout(60000)
+      })
+      return response.ok
+    } catch {
+      return false
+    }
+  }
+}
+
 // Auth API
 export const authApi = {
   login: (credentials: LoginCredentials): Promise<AuthResponse> =>

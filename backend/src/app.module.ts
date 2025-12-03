@@ -7,6 +7,7 @@ import { AdminModule } from './admin/admin.module';
 import { GameModule } from './game/game.module';
 import { SeederModule } from './seeder/seeder.module';
 import { StartupModule } from './startup/startup.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { StartupModule } from './startup/startup.module';
     AdminModule,
     GameModule,
     SeederModule,
+    HealthModule,
   ],
   controllers: [],
   providers: [],
