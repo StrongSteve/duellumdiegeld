@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import DisclaimerModal from '@/components/DisclaimerModal.vue'
+import iPadFrame from '@/components/iPadFrame.vue'
 import { healthApi } from '@/services/api'
 
 const isBackendReady = ref(false)
@@ -70,7 +71,9 @@ function retry() {
   <!-- Main app content -->
   <template v-else>
     <DisclaimerModal />
-    <RouterView />
+    <iPadFrame>
+      <RouterView />
+    </iPadFrame>
   </template>
 </template>
 
