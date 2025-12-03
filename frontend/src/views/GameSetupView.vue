@@ -27,7 +27,7 @@ function updatePlayerCount(count: number) {
   const newNames: string[] = []
 
   for (let i = 0; i < count; i++) {
-    newNames.push(currentNames[i] || `Spieler ${i + 1}`)
+    newNames.push(currentNames[i] || `Person ${i + 1}`)
   }
 
   playerNames.value = newNames
@@ -105,7 +105,7 @@ function goBack() {
         <div class="setup-card">
           <!-- Player count -->
           <div class="setup-section">
-            <label class="setup-label">Anzahl Spieler</label>
+            <label class="setup-label">Anzahl Mitspielende</label>
             <div class="player-count-grid">
               <button
                 v-for="n in 7"
@@ -121,7 +121,7 @@ function goBack() {
 
           <!-- Player names -->
           <div class="setup-section">
-            <label class="setup-label">Spielernamen</label>
+            <label class="setup-label">Namen</label>
             <div class="player-names-grid">
               <div v-for="(_, index) in playerNames" :key="index" class="player-name-input">
                 <span class="player-name-index">{{ index + 1 }}</span>
@@ -129,7 +129,7 @@ function goBack() {
                   v-model="playerNames[index]"
                   type="text"
                   class="input"
-                  :placeholder="`Spieler ${index + 1}`"
+                  :placeholder="`Person ${index + 1}`"
                 />
               </div>
             </div>
@@ -269,7 +269,7 @@ function goBack() {
 
 /* Action row - matches main game */
 .action-row {
-  @apply flex items-center gap-4;
+  @apply flex items-stretch gap-4;
   @apply mt-4;
 }
 
@@ -283,11 +283,10 @@ function goBack() {
   @apply bg-slate-800/60 hover:bg-slate-700;
   @apply text-slate-400 hover:text-slate-200;
   @apply border border-slate-700/50 hover:border-slate-600;
-  min-height: 44px;
 }
 
 .action-area {
-  @apply ml-auto;
+  @apply ml-auto flex;
   width: calc((100% - 2rem) / 3);
 }
 
@@ -335,8 +334,8 @@ function goBack() {
   opacity: 0;
 }
 
-/* Responsive adjustments */
-@media (max-width: 1024px) {
+/* Responsive adjustments - only for screens narrower than iPad landscape */
+@media (max-width: 768px) {
   .setup-top-row {
     @apply flex-col;
   }

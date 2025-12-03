@@ -21,7 +21,7 @@ const topics: Record<HelpTopic, { title: string; content: string[] }> = {
   betting: {
     title: 'Wetten',
     content: [
-      '💵 Jeder Spieler startet mit einem Startkapital.',
+      '💵 Alle starten mit einem Startkapital.',
       '📈 Nach jedem Hinweis könnt ihr einen beliebigen Betrag setzen.',
       '🔄 Alle Einsätze werden in den Pot geworfen.',
       '⚠️ Ihr könnt nur wetten, was ihr noch habt!',
@@ -35,7 +35,7 @@ const topics: Record<HelpTopic, { title: string; content: string[] }> = {
       '🚪 Ihr könnt jederzeit nach einem Hinweis aussteigen.',
       '💸 Beim Aussteigen verliert ihr alle bisherigen Einsätze dieser Runde.',
       '🛡️ Aber ihr riskiert nicht noch mehr Geld.',
-      '🏆 Wenn alle bis auf einen aussteigen, gewinnt der letzte Spieler automatisch.',
+      '🏆 Wenn alle bis auf eine Person aussteigen, gewinnt diese automatisch.',
       '🤔 Überlegt gut: Ist eure Schätzung gut genug?'
     ]
   },
@@ -50,13 +50,13 @@ const topics: Record<HelpTopic, { title: string; content: string[] }> = {
     ]
   },
   winner: {
-    title: 'Gewinner ermitteln',
+    title: 'Wer gewinnt?',
     content: [
       '🎯 Wer am nächsten an der korrekten Zahl liegt, gewinnt.',
       '📏 Es zählt der absolute Abstand (egal ob darüber oder darunter).',
-      '🏆 Der Gewinner erhält den gesamten Pot.',
+      '🏆 Wer gewinnt, erhält den gesamten Pot.',
       '🤝 Bei Gleichstand wird der Pot geteilt.',
-      '🚪 Wenn nur ein Spieler übrig ist (alle anderen sind ausgestiegen), gewinnt dieser automatisch.'
+      '🚪 Wenn nur eine Person übrig ist (alle anderen sind ausgestiegen), gewinnt diese automatisch.'
     ]
   }
 }

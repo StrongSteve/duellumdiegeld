@@ -32,12 +32,12 @@ function getRole(playerName: string, sbName?: string, bbName?: string): string |
 function getRoleLabel(role: string | null): string {
   if (role === 'SB') return 'Small Blind'
   if (role === 'BB') return 'Big Blind'
-  return 'Spieler'
+  return 'Mitspielend'
 }
 </script>
 
 <template>
-  <GameModal :is-open="isOpen" title="Spielerübersicht" @close="emit('close')">
+  <GameModal :is-open="isOpen" title="Mitspielende" @close="emit('close')">
     <div class="players-table-wrapper">
       <table class="players-table">
         <thead>

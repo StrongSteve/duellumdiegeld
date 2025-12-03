@@ -29,10 +29,10 @@ export const useGameStore = defineStore('game', () => {
   const settings = ref<GameSettings>(
     loadFromStorage(STORAGE_KEYS.SETTINGS) || {
       playerCount: 2,
-      playerNames: ['Spieler 1', 'Spieler 2'],
+      playerNames: ['Person 1', 'Person 2'],
       players: [
-        { name: 'Spieler 1', isActive: true },
-        { name: 'Spieler 2', isActive: true }
+        { name: 'Person 1', isActive: true },
+        { name: 'Person 2', isActive: true }
       ],
       dealerIndex: 0
     }
@@ -106,7 +106,7 @@ export const useGameStore = defineStore('game', () => {
       { state: GameState.BETTING_ROUND, label: 'Einsätze', bettingRound: 3, icon: '💰' },
       { state: GameState.REVEAL_ANSWER, label: 'Auflösung', icon: '🎯' },
       { state: GameState.BETTING_ROUND, label: 'Einsätze', bettingRound: 4, icon: '💰' },
-      { state: GameState.ROUND_SUMMARY, label: 'Gewinner', icon: '🏆' }
+      { state: GameState.ROUND_SUMMARY, label: 'Auswertung', icon: '🏆' }
     ]
   })
 

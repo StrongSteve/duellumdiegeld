@@ -75,7 +75,7 @@ export interface Question {
 }
 
 // Spielzustände - Neuer Ablauf:
-// Frage → Schätzen → Einsatzrunde 1 → Hinweis 1 → Einsatzrunde 2 → Hinweis 2 → Einsatzrunde 3 → Auflösung → Einsatzrunde 4 → Gewinner
+// Frage → Schätzen → Einsatzrunde 1 → Hinweis 1 → Einsatzrunde 2 → Hinweis 2 → Einsatzrunde 3 → Auflösung → Einsatzrunde 4 → Auswertung
 export enum GameState {
   QUESTION_INTRO = 'QUESTION_INTRO',
   WRITE_GUESSES = 'WRITE_GUESSES',
@@ -93,11 +93,11 @@ export const GameStateLabels: Record<GameState, string> = {
   [GameState.BETTING_ROUND]: 'Einsätze',
   [GameState.HINT_REVEAL]: 'Hinweis',
   [GameState.REVEAL_ANSWER]: 'Auflösung',
-  [GameState.ROUND_SUMMARY]: 'Gewinner',
+  [GameState.ROUND_SUMMARY]: 'Auswertung',
   [GameState.GAME_OVER]: 'Spiel Ende'
 }
 
-// Spieler
+// Mitspielende
 export interface Player {
   name: string
   isActive: boolean // false = ausgeschieden

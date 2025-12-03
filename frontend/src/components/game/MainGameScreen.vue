@@ -321,13 +321,13 @@ const isSolutionUnlocked = computed(() => {
 
 /* Action row: end game button on left, next action button on right (same width as one info card) */
 .action-row {
-  @apply flex items-center gap-4;
+  @apply flex items-stretch gap-4;
   @apply mt-4;
 }
 
 /* Action area - same width as one info card, aligned right */
 .action-area {
-  @apply ml-auto;
+  @apply ml-auto flex;
   /* Width = 1/3 of container minus the gaps (same as one grid column) */
   width: calc((100% - 2rem) / 3);
 }
@@ -356,8 +356,8 @@ const isSolutionUnlocked = computed(() => {
   /* Full width */
 }
 
-/* Responsive adjustments */
-@media (max-width: 1024px) {
+/* Responsive adjustments - only for screens narrower than iPad landscape */
+@media (max-width: 768px) {
   .game-container {
     @apply flex-col;
   }
@@ -371,7 +371,7 @@ const isSolutionUnlocked = computed(() => {
   }
 
   .info-cards-row {
-    @apply grid-cols-1 sm:grid-cols-3;
+    @apply grid-cols-1;
   }
 
   .action-row {
@@ -383,7 +383,7 @@ const isSolutionUnlocked = computed(() => {
   }
 
   .hints-row {
-    @apply grid-cols-1 sm:grid-cols-2;
+    @apply grid-cols-1;
   }
 }
 

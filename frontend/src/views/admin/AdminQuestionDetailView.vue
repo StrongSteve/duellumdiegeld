@@ -299,7 +299,7 @@ function logout() {
               </div>
             </div>
             <p class="text-slate-500 text-sm mt-2">
-              Hinweise sollten die Spieler schrittweise zur Antwort führen.
+              Hinweise sollten schrittweise zur Antwort führen.
             </p>
           </div>
 

@@ -122,7 +122,7 @@ watch(() => props.isOpen, (newVal) => {
 
       <!-- Players section - compact grid -->
       <div class="players-section">
-        <p class="section-hint">Tippe auf einen Spieler, um ihn aus dem Spiel zu nehmen</p>
+        <p class="section-hint">Tippe auf eine Person, um sie aus dem Spiel zu nehmen</p>
         <div class="players-grid">
           <button
             v-for="player in players"

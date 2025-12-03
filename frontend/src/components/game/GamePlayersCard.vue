@@ -46,7 +46,7 @@ function getRole(playerName: string, sbName?: string, bbName?: string): string |
 
     <!-- Content -->
     <div class="players-card__content">
-      <span class="players-card__label">Spielerübersicht</span>
+      <span class="players-card__label">Mitspielende</span>
 
       <!-- Player chips -->
       <div class="players-card__chips">

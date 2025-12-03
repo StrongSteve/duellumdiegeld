@@ -42,7 +42,7 @@ const shortLabels: Record<string, string> = {
   'Wette 3': 'B3',
   'Auflösung': 'R',
   'Wette 4': 'B4',
-  'Gewinner': 'W'
+  'Auswertung': 'W'
 }
 
 function getShortLabel(label: string): string {

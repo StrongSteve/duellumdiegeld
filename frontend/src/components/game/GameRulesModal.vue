@@ -28,10 +28,10 @@ const emit = defineEmits<{
         <h4 class="rules-section__title">Spielablauf</h4>
         <ol class="rules-section__list rules-section__list--numbered">
           <li>Eine Frage wird vorgelesen</li>
-          <li>Alle Spieler schreiben ihre Schätzung geheim auf</li>
+          <li>Alle schreiben ihre Schätzung geheim auf</li>
           <li>Mehrere Einsatzrunden mit Hinweisen folgen</li>
           <li>Die Lösung wird aufgedeckt</li>
-          <li>Der Spieler mit der besten Schätzung gewinnt den Pot</li>
+          <li>Wer am besten geschätzt hat, gewinnt den Pot</li>
         </ol>
       </section>
 
@@ -68,12 +68,12 @@ const emit = defineEmits<{
         </ul>
       </section>
 
-      <!-- Gewinner -->
+      <!-- Wer gewinnt -->
       <section class="rules-section">
-        <h4 class="rules-section__title">Gewinner ermitteln</h4>
+        <h4 class="rules-section__title">Wer gewinnt?</h4>
         <p class="rules-section__text">
-          Der Spieler, dessen Schätzung am nächsten an der richtigen Antwort liegt,
-          gewinnt den Pot. Bei Gleichstand wird der Pot geteilt.
+          Wer am nächsten an der richtigen Antwort liegt, gewinnt den Pot.
+          Bei Gleichstand wird der Pot geteilt.
         </p>
       </section>
 
@@ -89,7 +89,7 @@ const emit = defineEmits<{
             <span class="example-step__number">1</span>
             <div class="example-step__content">
               <strong>Frage & Schätzung</strong>
-              <p>Die Frage lautet: „Wie viele Kilometer hat der Nil?" Alle vier Spieler schreiben ihre Schätzung geheim auf einen Zettel:</p>
+              <p>Die Frage lautet: „Wie viele Kilometer hat der Nil?" Alle vier schreiben ihre Schätzung geheim auf einen Zettel:</p>
               <ul class="example-guesses">
                 <li><span class="player-name">Anna:</span> 5.500 km</li>
                 <li><span class="player-name">Ben:</span> 7.200 km</li>
@@ -166,7 +166,7 @@ const emit = defineEmits<{
           <div class="example-note">
             <p>Nach dem Showdown öffnet sich ein Dialog, in dem ihr:</p>
             <ul>
-              <li>Spieler aus dem Spiel nehmen könnt (wenn jemand kein Geld mehr hat)</li>
+              <li>Personen aus dem Spiel nehmen könnt (wenn jemand kein Geld mehr hat)</li>
               <li>Die Frage mit Sternen bewerten könnt</li>
               <li>Zur nächsten Runde mit neuer Frage weitergehen könnt</li>
             </ul>

@@ -50,13 +50,13 @@ function clearSelection() {
       <span class="winner-selection__icon">🏆</span>
       <span class="winner-selection__label">
         <template v-if="selectedWinners.length === 0">
-          Gewinner markieren (optional)
+          Wer hat gewonnen? (optional)
         </template>
         <template v-else-if="selectedWinners.length === 1">
-          Gewinner: {{ selectedWinners[0] }}
+          Gewonnen: {{ selectedWinners[0] }}
         </template>
         <template v-else>
-          Gewinner: {{ selectedWinners.join(', ') }}
+          Gewonnen: {{ selectedWinners.join(', ') }}
         </template>
       </span>
       <svg
