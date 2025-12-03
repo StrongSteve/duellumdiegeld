@@ -36,6 +36,12 @@ const selectedRating = ref<number>(0)
 const hoverRating = ref<number>(0)
 const hasRated = ref(false)
 
+// Check localStorage for previous rating on this question
+function checkIfAlreadyRated(): boolean {
+  const ratedQuestions = JSON.parse(localStorage.getItem('ratedQuestions') || '[]')
+  return ratedQuestions.includes(props.questionId)
+}
+
 // Computed: Active players count
 const activePlayersCount = computed(() => props.players.filter(p => p.isActive).length)
 
@@ -80,7 +86,8 @@ function handleStarLeave() {
 function resetState() {
   selectedRating.value = 0
   hoverRating.value = 0
-  hasRated.value = false
+  // Check if already rated in localStorage
+  hasRated.value = checkIfAlreadyRated()
 }
 
 // Watch for modal open

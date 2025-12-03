@@ -25,6 +25,8 @@ A digital game facilitator for the analog quiz/poker card game. The app is place
 - **Session persistence**: Survives browser reloads
 - **PWA support**: Installable as app on mobile devices
 - **Cookie-based question tracking**: Avoids question repetition
+- **Question rating**: 5-star rating system with vote manipulation protection
+- **Source URL display**: Clickable link to source when solution is revealed
 
 ### Public Question Submission
 - Form with category, question, numeric answer, hints, source
@@ -66,6 +68,8 @@ A digital game facilitator for the analog quiz/poker card game. The app is place
 | GET | `/api/questions/random` | Random approved question |
 | GET | `/api/questions/count` | Count of approved questions |
 | GET | `/api/questions/captcha` | Math captcha challenge |
+| POST | `/api/questions/rate` | Rate a question (1-5 stars) |
+| GET | `/api/health` | Health check endpoint |
 
 ### Auth Endpoints
 
@@ -169,6 +173,9 @@ Example output:
   - 3rd failure: 500 seconds lockout
   - Maximum: 1 hour lockout
 - **JWT tokens**: 24h validity, validated against database
+- **Rating protection**: Dual-layer protection against vote manipulation
+  - Frontend: localStorage check prevents re-rating same question
+  - Backend: IP hash stored per rating, rejects duplicate ratings from same IP
 
 ## Local Development
 

@@ -105,11 +105,34 @@ function handleReactivatePlayer(playerName: string) {
   gameStore.reactivatePlayer(playerName)
 }
 
+// Check if question was already rated (localStorage check)
+function hasRatedQuestion(questionId: string): boolean {
+  const ratedQuestions = JSON.parse(localStorage.getItem('ratedQuestions') || '[]')
+  return ratedQuestions.includes(questionId)
+}
+
+// Mark question as rated in localStorage
+function markQuestionAsRated(questionId: string): void {
+  const ratedQuestions = JSON.parse(localStorage.getItem('ratedQuestions') || '[]')
+  if (!ratedQuestions.includes(questionId)) {
+    ratedQuestions.push(questionId)
+    localStorage.setItem('ratedQuestions', JSON.stringify(ratedQuestions))
+  }
+}
+
 // Handle question rating
 async function handleRateQuestion(rating: number) {
   if (currentQuestion.value) {
+    // Check if already rated (frontend protection)
+    if (hasRatedQuestion(currentQuestion.value.id)) {
+      console.log('Question already rated (localStorage check)')
+      return
+    }
+
     try {
       await questionsApi.rateQuestion(currentQuestion.value.id, rating)
+      // Mark as rated in localStorage
+      markQuestionAsRated(currentQuestion.value.id)
       // Update local question data to reflect the new rating
       currentQuestion.value.ratingSum = (currentQuestion.value.ratingSum || 0) + rating
       currentQuestion.value.ratingCount = (currentQuestion.value.ratingCount || 0) + 1
@@ -176,6 +199,7 @@ function handleShowdownDismissed() {
       :is-loading="gameStore.isLoading"
       :rating-sum="currentQuestion.ratingSum"
       :rating-count="currentQuestion.ratingCount"
+      :source-url="currentQuestion.sourceUrl"
       @next-action="handleNextAction"
       @end-game="confirmEndGame"
       @rate-question="handleRateQuestion"

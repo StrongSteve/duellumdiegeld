@@ -60,6 +60,8 @@ const props = defineProps<{
   ratingSum?: number
   /** Question rating count */
   ratingCount?: number
+  /** Source URL for the answer */
+  sourceUrl?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -194,6 +196,7 @@ const isSolutionUnlocked = computed(() => {
             :solution-text="solutionText"
             :is-unlocked="isSolutionUnlocked"
             :is-revealed="isSolutionRevealed"
+            :source-url="sourceUrl"
           />
         </div>
 

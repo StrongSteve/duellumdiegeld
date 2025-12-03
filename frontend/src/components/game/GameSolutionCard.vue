@@ -4,9 +4,9 @@
  *
  * Features:
  * - "Lösung" title
- * - Lock icon when not revealed
  * - Locked/unlocked/revealed states
  * - Large solution text when revealed
+ * - Source URL link when revealed
  */
 
 defineProps<{
@@ -16,6 +16,8 @@ defineProps<{
   isUnlocked: boolean
   /** Whether the solution has been revealed */
   isRevealed: boolean
+  /** Optional source URL for the answer */
+  sourceUrl?: string | null
 }>()
 </script>
 
@@ -38,38 +40,15 @@ defineProps<{
           Noch nicht freigeschaltet
         </template>
       </span>
-    </div>
-
-    <!-- Lock icon -->
-    <div class="solution-card__icon">
-      <svg
-        v-if="!isRevealed"
-        class="w-5 h-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
+      <a
+        v-if="isRevealed && sourceUrl"
+        :href="sourceUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="solution-card__source"
       >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-        />
-      </svg>
-      <svg
-        v-else
-        class="w-5 h-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"
-        />
-      </svg>
+        Quelle ansehen →
+      </a>
     </div>
   </div>
 </template>
@@ -96,9 +75,6 @@ defineProps<{
   @apply text-slate-500;
 }
 
-.solution-card--locked .solution-card__icon {
-  @apply text-slate-500;
-}
 
 /* Unlocked but not revealed */
 .solution-card--unlocked {
@@ -114,9 +90,6 @@ defineProps<{
   @apply text-slate-400;
 }
 
-.solution-card--unlocked .solution-card__icon {
-  @apply text-gold-500/60;
-}
 
 /* Revealed state */
 .solution-card--revealed {
@@ -136,9 +109,6 @@ defineProps<{
   background-clip: text;
 }
 
-.solution-card--revealed .solution-card__icon {
-  @apply text-gold-500;
-}
 
 .solution-card__content {
   @apply flex flex-col gap-0.5;
@@ -152,7 +122,12 @@ defineProps<{
   @apply text-xs;
 }
 
-.solution-card__icon {
-  @apply flex-shrink-0;
+.solution-card__source {
+  @apply text-xs;
+  @apply text-gold-400/80 hover:text-gold-300;
+  @apply underline;
+  @apply transition-colors duration-150;
+  @apply cursor-pointer;
+  @apply mt-1;
 }
 </style>

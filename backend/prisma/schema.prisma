@@ -93,3 +93,15 @@ model GameSession {
 
   @@map("game_sessions")
 }
+
+// Rating-Tracking zur Vermeidung von Mehrfachbewertungen
+model QuestionRating {
+  id         String   @id @default(cuid())
+  questionId String   @map("question_id")
+  ipHash     String   @map("ip_hash") // SHA-256 Hash der IP-Adresse für Datenschutz
+  rating     Int
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@unique([questionId, ipHash]) // Eine IP kann jede Frage nur einmal bewerten
+  @@map("question_ratings")
+}

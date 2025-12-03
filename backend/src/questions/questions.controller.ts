@@ -1,4 +1,5 @@
-import { Controller, Post, Get, Body, Query } from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, Req } from '@nestjs/common';
+import { Request } from 'express';
 import { QuestionsService } from './questions.service';
 import { CaptchaService } from './captcha.service';
 import { SubmitQuestionDto } from './dto/submit-question.dto';
@@ -47,7 +48,13 @@ export class QuestionsController {
   }
 
   @Post('rate')
-  async rateQuestion(@Body() dto: RateQuestionDto) {
-    return this.questionsService.rateQuestion(dto.questionId, dto.rating);
+  async rateQuestion(@Body() dto: RateQuestionDto, @Req() req: Request) {
+    // Get IP from x-forwarded-for header (for proxied requests) or fall back to connection IP
+    const forwardedFor = req.headers['x-forwarded-for'];
+    const ip = typeof forwardedFor === 'string'
+      ? forwardedFor.split(',')[0].trim()
+      : req.ip || req.socket.remoteAddress || 'unknown';
+
+    return this.questionsService.rateQuestion(dto.questionId, dto.rating, ip);
   }
 }

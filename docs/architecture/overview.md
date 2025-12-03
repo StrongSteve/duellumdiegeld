@@ -349,6 +349,8 @@ Siehe [Architecture Decision Records](/docs/adr/) für detaillierte Begründunge
 6. **ADR-0006**: Kein Spieler-Login (Analoge Erfahrung)
 7. **ADR-0007**: TailwindCSS (Utility-First, Konsistenz)
 8. **ADR-0008**: CAPTCHA für Submissions (Spam-Schutz)
+9. **ADR-0009**: Single-Container Deployment (Render.com Free Tier)
+10. **ADR-0010**: Dual-Layer Rating Protection (Vote Manipulation Prevention)
 
 ## 7. Deployment-Architektur
 
@@ -384,9 +386,83 @@ Siehe [Architecture Decision Records](/docs/adr/) für detaillierte Begründunge
 | Bereich | Maßnahme |
 |---------|----------|
 | API | JWT-Authentifizierung für Admin |
-| CAPTCHA | hCaptcha für öffentliche Submissions |
+| CAPTCHA | Math-Captcha für öffentliche Submissions (lokal, keine externen Services) |
 | Validierung | class-validator DTOs im Backend |
 | SQL Injection | Prisma (Parameterized Queries) |
 | XSS | Vue 3 (automatisches Escaping) |
 | CORS | Konfiguriert für erlaubte Origins |
 | Headers | Security Headers via Nginx |
+| Rating-Schutz | Dual-Layer: localStorage (Frontend) + IP-Hash (Backend) |
+| Login | Rate Limiting mit exponential backoff |
+
+## 9. Bewertungssystem (Rating)
+
+### Datenmodell
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     QuestionRating Tabelle                       │
+├─────────────────────────────────────────────────────────────────┤
+│  id           │ String (CUID)    │ Primary Key                  │
+│  questionId   │ String           │ Referenz zur Frage           │
+│  ipHash       │ String           │ SHA-256 Hash der IP-Adresse  │
+│  rating       │ Int (1-5)        │ Bewertung                    │
+│  createdAt    │ DateTime         │ Zeitstempel                  │
+├─────────────────────────────────────────────────────────────────┤
+│  UNIQUE(questionId, ipHash)      │ Verhindert Doppelbewertungen │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Schutz vor Manipulation
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                    Rating-Schutz Flow                             │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│  ┌─────────────┐                      ┌─────────────┐            │
+│  │   Nutzer    │                      │   Backend   │            │
+│  │  bewertet   │                      │             │            │
+│  └──────┬──────┘                      └──────┬──────┘            │
+│         │                                    │                    │
+│         ▼                                    │                    │
+│  ┌─────────────┐                             │                    │
+│  │ localStorage│ ◄── Check: Bereits         │                    │
+│  │   Check     │     bewertet?              │                    │
+│  └──────┬──────┘                             │                    │
+│         │ Nein                               │                    │
+│         ▼                                    │                    │
+│  ┌─────────────┐   POST /rate   ┌───────────┴───────────┐       │
+│  │   API Call  │───────────────►│  IP aus Header/Socket │       │
+│  └─────────────┘                └───────────┬───────────┘       │
+│                                             │                    │
+│                                             ▼                    │
+│                                  ┌─────────────────────┐        │
+│                                  │   SHA-256(IP) →     │        │
+│                                  │   ipHash            │        │
+│                                  └──────────┬──────────┘        │
+│                                             │                    │
+│                                             ▼                    │
+│                                  ┌─────────────────────┐        │
+│                                  │  DB Check:          │        │
+│                                  │  questionId+ipHash  │        │
+│                                  │  bereits vorhanden? │        │
+│                                  └──────────┬──────────┘        │
+│                                             │                    │
+│                           ┌─────────────────┴─────────────────┐ │
+│                           │                                   │ │
+│                           ▼ Nein                     Ja ▼     │ │
+│                  ┌─────────────────┐         ┌─────────────┐  │ │
+│                  │ Rating speichern│         │ 400 Error:  │  │ │
+│                  │ ratingSum++     │         │ "Bereits    │  │ │
+│                  │ ratingCount++   │         │  bewertet"  │  │ │
+│                  └─────────────────┘         └─────────────┘  │ │
+│                                                               │ │
+└───────────────────────────────────────────────────────────────┘ │
+```
+
+### Datenschutz
+
+- IP-Adressen werden **nicht** im Klartext gespeichert
+- SHA-256 Hash ist nicht umkehrbar
+- Ermöglicht Duplikat-Erkennung ohne Nutzer-Identifikation

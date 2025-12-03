@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SubmitQuestionDto } from './dto/submit-question.dto';
 import { CaptchaService } from './captcha.service';
 import { QuestionStatus, Category } from '@prisma/client';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class QuestionsService {
@@ -142,7 +143,7 @@ export class QuestionsService {
     });
   }
 
-  async rateQuestion(questionId: string, rating: number) {
+  async rateQuestion(questionId: string, rating: number, ipAddress: string) {
     const question = await this.prisma.question.findUnique({
       where: { id: questionId },
     });
@@ -151,13 +152,40 @@ export class QuestionsService {
       throw new BadRequestException('Frage nicht gefunden');
     }
 
-    await this.prisma.question.update({
-      where: { id: questionId },
-      data: {
-        ratingSum: { increment: rating },
-        ratingCount: { increment: 1 },
+    // Hash the IP address for privacy
+    const ipHash = crypto.createHash('sha256').update(ipAddress).digest('hex');
+
+    // Check if this IP already rated this question
+    const existingRating = await this.prisma.questionRating.findUnique({
+      where: {
+        questionId_ipHash: {
+          questionId,
+          ipHash,
+        },
       },
     });
+
+    if (existingRating) {
+      throw new BadRequestException('Du hast diese Frage bereits bewertet');
+    }
+
+    // Create rating record and update question in a transaction
+    await this.prisma.$transaction([
+      this.prisma.questionRating.create({
+        data: {
+          questionId,
+          ipHash,
+          rating,
+        },
+      }),
+      this.prisma.question.update({
+        where: { id: questionId },
+        data: {
+          ratingSum: { increment: rating },
+          ratingCount: { increment: 1 },
+        },
+      }),
+    ]);
 
     return { success: true, message: 'Bewertung gespeichert' };
   }
