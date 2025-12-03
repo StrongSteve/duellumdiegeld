@@ -106,8 +106,7 @@ onMounted(async () => {
 <style scoped>
 .home-view {
   @apply bg-slate-900;
-  height: 100vh;
-  height: 100dvh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
