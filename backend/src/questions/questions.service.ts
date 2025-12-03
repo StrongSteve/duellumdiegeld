@@ -77,21 +77,47 @@ export class QuestionsService {
       whereClause.id = { notIn: excludeIds };
     }
 
-    // Zähle verfügbare Fragen
-    const count = await this.prisma.question.count({
+    // Get all available questions with their ratings
+    const questions = await this.prisma.question.findMany({
       where: whereClause,
+      select: {
+        id: true,
+        ratingSum: true,
+        ratingCount: true,
+      },
     });
 
-    if (count === 0) {
+    if (questions.length === 0) {
       return null;
     }
 
-    // Zufällige Frage auswählen
-    const skip = Math.floor(Math.random() * count);
+    // Calculate weights based on average rating
+    // Unrated questions get a neutral weight of 3 (middle of 1-5 scale)
+    // Weight formula: avgRating + 2 (so weights range from 3 to 7)
+    const questionsWithWeights = questions.map((q) => {
+      const avgRating = q.ratingCount > 0 ? q.ratingSum / q.ratingCount : 3;
+      const weight = avgRating + 2; // Shift to make all weights positive and meaningful
+      return { id: q.id, weight };
+    });
 
-    const question = await this.prisma.question.findFirst({
-      where: whereClause,
-      skip: skip,
+    // Calculate total weight
+    const totalWeight = questionsWithWeights.reduce((sum, q) => sum + q.weight, 0);
+
+    // Weighted random selection
+    let random = Math.random() * totalWeight;
+    let selectedId = questionsWithWeights[0].id;
+
+    for (const q of questionsWithWeights) {
+      random -= q.weight;
+      if (random <= 0) {
+        selectedId = q.id;
+        break;
+      }
+    }
+
+    // Fetch the full question
+    const question = await this.prisma.question.findUnique({
+      where: { id: selectedId },
       include: {
         hints: {
           orderBy: { orderIndex: 'asc' },
@@ -114,5 +140,25 @@ export class QuestionsService {
     return this.prisma.question.count({
       where: { status: QuestionStatus.APPROVED },
     });
+  }
+
+  async rateQuestion(questionId: string, rating: number) {
+    const question = await this.prisma.question.findUnique({
+      where: { id: questionId },
+    });
+
+    if (!question) {
+      throw new BadRequestException('Frage nicht gefunden');
+    }
+
+    await this.prisma.question.update({
+      where: { id: questionId },
+      data: {
+        ratingSum: { increment: rating },
+        ratingCount: { increment: 1 },
+      },
+    });
+
+    return { success: true, message: 'Bewertung gespeichert' };
   }
 }

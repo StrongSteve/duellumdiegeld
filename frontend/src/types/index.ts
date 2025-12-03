@@ -67,6 +67,8 @@ export interface Question {
   contributorName?: string
   rejectionReason?: string
   playedCount: number // Wie oft wurde die Frage gespielt
+  ratingSum: number // Sum of all ratings (1-5)
+  ratingCount: number // Number of ratings
   createdAt: string
   updatedAt: string
   hints: Hint[]

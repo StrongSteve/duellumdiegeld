@@ -18,6 +18,12 @@ const filterStatus = ref<QuestionStatus | ''>('')
 const filterCategory = ref<Category | ''>('')
 const searchQuery = ref('')
 
+// Sorting
+type SortField = 'date' | 'rating' | 'played'
+type SortOrder = 'asc' | 'desc'
+const sortField = ref<SortField>('date')
+const sortOrder = ref<SortOrder>('desc')
+
 const categories = Object.entries(CategoryLabels).map(([value, label]) => ({
   value: value as Category,
   label
@@ -27,6 +33,12 @@ const statuses = Object.entries(StatusLabels).map(([value, label]) => ({
   value: value as QuestionStatus,
   label
 }))
+
+// Helper to calculate average rating
+function getAverageRating(question: Question): number {
+  if (!question.ratingCount || question.ratingCount === 0) return 0
+  return question.ratingSum / question.ratingCount
+}
 
 const filteredQuestions = computed(() => {
   let result = questions.value
@@ -46,8 +58,38 @@ const filteredQuestions = computed(() => {
     )
   }
 
+  // Apply sorting
+  result = [...result].sort((a, b) => {
+    let comparison = 0
+
+    switch (sortField.value) {
+      case 'rating':
+        comparison = getAverageRating(a) - getAverageRating(b)
+        break
+      case 'played':
+        comparison = (a.playedCount || 0) - (b.playedCount || 0)
+        break
+      case 'date':
+      default:
+        comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        break
+    }
+
+    return sortOrder.value === 'desc' ? -comparison : comparison
+  })
+
   return result
 })
+
+// Toggle sort
+function toggleSort(field: SortField) {
+  if (sortField.value === field) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortField.value = field
+    sortOrder.value = 'desc'
+  }
+}
 
 onMounted(async () => {
   await loadQuestions()
@@ -216,9 +258,25 @@ function logout() {
                 <th>Frage</th>
                 <th>Kategorie</th>
                 <th>Antwort</th>
-                <th>Gespielt</th>
+                <th class="sortable-header" @click="toggleSort('played')">
+                  Gespielt
+                  <span v-if="sortField === 'played'" class="sort-indicator">
+                    {{ sortOrder === 'desc' ? '▼' : '▲' }}
+                  </span>
+                </th>
+                <th class="sortable-header" @click="toggleSort('rating')">
+                  Bewertung
+                  <span v-if="sortField === 'rating'" class="sort-indicator">
+                    {{ sortOrder === 'desc' ? '▼' : '▲' }}
+                  </span>
+                </th>
                 <th>Status</th>
-                <th>Datum</th>
+                <th class="sortable-header" @click="toggleSort('date')">
+                  Datum
+                  <span v-if="sortField === 'date'" class="sort-indicator">
+                    {{ sortOrder === 'desc' ? '▼' : '▲' }}
+                  </span>
+                </th>
                 <th>Aktionen</th>
               </tr>
             </thead>
@@ -249,6 +307,18 @@ function logout() {
                   <span class="text-slate-300">
                     {{ question.playedCount || 0 }}x
                   </span>
+                </td>
+                <td>
+                  <div class="rating-display">
+                    <span v-if="question.ratingCount > 0" class="rating-stars">
+                      <span class="star-filled">★</span>
+                      <span class="rating-value">{{ getAverageRating(question).toFixed(1) }}</span>
+                    </span>
+                    <span v-else class="rating-none">–</span>
+                    <span v-if="question.ratingCount > 0" class="rating-count">
+                      ({{ question.ratingCount }})
+                    </span>
+                  </div>
                 </td>
                 <td>
                   <span :class="['badge text-xs', getStatusBadgeClass(question.status)]">
@@ -286,3 +356,41 @@ function logout() {
     </main>
   </div>
 </template>
+
+<style scoped>
+.sortable-header {
+  @apply cursor-pointer select-none;
+  @apply hover:text-primary-400;
+  @apply transition-colors;
+}
+
+.sort-indicator {
+  @apply ml-1 text-primary-400;
+  font-size: 0.7em;
+}
+
+.rating-display {
+  @apply flex items-center gap-1;
+}
+
+.rating-stars {
+  @apply flex items-center gap-1;
+}
+
+.star-filled {
+  @apply text-yellow-400;
+  font-size: 1rem;
+}
+
+.rating-value {
+  @apply text-slate-200 font-medium;
+}
+
+.rating-none {
+  @apply text-slate-500;
+}
+
+.rating-count {
+  @apply text-slate-500 text-xs;
+}
+</style>

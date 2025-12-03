@@ -47,6 +47,8 @@ model Question {
   contributorName String?        @map("contributor_name")
   rejectionReason String?        @map("rejection_reason")
   playedCount     Int            @default(0) @map("played_count")
+  ratingSum       Int            @default(0) @map("rating_sum")    // Sum of all ratings (1-5)
+  ratingCount     Int            @default(0) @map("rating_count")  // Number of ratings
   createdAt       DateTime       @default(now()) @map("created_at")
   updatedAt       DateTime       @updatedAt @map("updated_at")
 

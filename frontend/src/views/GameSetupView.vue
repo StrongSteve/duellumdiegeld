@@ -5,7 +5,6 @@ import { useGameStore } from '@/stores/game'
 import GameScreenLayout from '@/components/GameScreenLayout.vue'
 import PrimaryButton from '@/components/PrimaryButton.vue'
 import SecondaryButton from '@/components/SecondaryButton.vue'
-import CollapsiblePanel from '@/components/CollapsiblePanel.vue'
 
 const router = useRouter()
 const gameStore = useGameStore()
@@ -140,20 +139,6 @@ function goBack() {
         </div>
       </div>
 
-      <!-- Texas Hold'em Info - Collapsible -->
-      <CollapsiblePanel
-        title="Wie bei Texas Hold'em"
-        icon="🃏"
-      >
-        <p>
-          Die Wettrunden funktionieren wie beim Poker. Der Dealer-Button rotiert jede Runde.
-          Small Blind und Big Blind wechseln entsprechend.
-        </p>
-        <p class="mt-2">
-          <strong class="text-slate-300">Das Geld wird offline auf Papier verwaltet.</strong>
-          Das Tablet zeigt nur den Spielablauf an.
-        </p>
-      </CollapsiblePanel>
     </div>
 
     <!-- Actions slot -->

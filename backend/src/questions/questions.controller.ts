@@ -2,6 +2,7 @@ import { Controller, Post, Get, Body, Query } from '@nestjs/common';
 import { QuestionsService } from './questions.service';
 import { CaptchaService } from './captcha.service';
 import { SubmitQuestionDto } from './dto/submit-question.dto';
+import { RateQuestionDto } from './dto/rate-question.dto';
 
 @Controller('questions')
 export class QuestionsController {
@@ -43,5 +44,10 @@ export class QuestionsController {
   @Get('captcha')
   getCaptchaChallenge() {
     return this.captchaService.generateChallenge();
+  }
+
+  @Post('rate')
+  async rateQuestion(@Body() dto: RateQuestionDto) {
+    return this.questionsService.rateQuestion(dto.questionId, dto.rating);
   }
 }

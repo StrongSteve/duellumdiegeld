@@ -78,7 +78,13 @@ export const questionsApi = {
     fetchApi('/questions/count'),
 
   getCaptchaChallenge: (): Promise<{ challengeId: string; question: string }> =>
-    fetchApi('/questions/captcha')
+    fetchApi('/questions/captcha'),
+
+  rateQuestion: (questionId: string, rating: number): Promise<{ success: boolean; message: string }> =>
+    fetchApi('/questions/rate', {
+      method: 'POST',
+      body: JSON.stringify({ questionId, rating })
+    })
 }
 
 // Admin API
