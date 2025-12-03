@@ -77,6 +77,8 @@ function accept() {
   z-index: 9999;
   padding: 1rem;
   backdrop-filter: blur(4px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-container {
@@ -84,12 +86,16 @@ function accept() {
   border-radius: 1.5rem;
   max-width: 700px;
   width: 100%;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 2rem 2.5rem;
   text-align: center;
   box-shadow:
     0 25px 50px -12px rgba(0, 0, 0, 0.5),
     0 0 100px rgba(251, 191, 36, 0.1);
   animation: modalAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  margin: auto;
 }
 
 @keyframes modalAppear {
