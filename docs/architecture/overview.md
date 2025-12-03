@@ -351,6 +351,7 @@ Siehe [Architecture Decision Records](/docs/adr/) für detaillierte Begründunge
 8. **ADR-0008**: CAPTCHA für Submissions (Spam-Schutz)
 9. **ADR-0009**: Single-Container Deployment (Render.com Free Tier)
 10. **ADR-0010**: Dual-Layer Rating Protection (Vote Manipulation Prevention)
+11. **ADR-0011**: Responsive Design Strategy (Device-specific layouts)
 
 ## 7. Deployment-Architektur
 

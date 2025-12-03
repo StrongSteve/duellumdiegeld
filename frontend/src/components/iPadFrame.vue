@@ -4,11 +4,35 @@
  *
  * Wraps content in an iPad-like frame on desktop screens.
  * On tablet/mobile, the frame disappears and content fills the screen.
+ * On smartphones (portrait), content is scrollable without any frame constraints.
  */
+import { ref, onMounted, onUnmounted } from 'vue'
+
+const isMobilePortrait = ref(false)
+
+function checkMobilePortrait() {
+  // Consider mobile portrait if width < 768px AND height > width (portrait orientation)
+  isMobilePortrait.value = window.innerWidth < 768 && window.innerHeight > window.innerWidth
+}
+
+onMounted(() => {
+  checkMobilePortrait()
+  window.addEventListener('resize', checkMobilePortrait)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobilePortrait)
+})
 </script>
 
 <template>
-  <div class="ipad-wrapper">
+  <!-- Mobile portrait: No frame, just scrollable content -->
+  <div v-if="isMobilePortrait" class="mobile-wrapper">
+    <slot></slot>
+  </div>
+
+  <!-- Desktop/Tablet: iPad frame -->
+  <div v-else class="ipad-wrapper">
     <!-- iPad device frame (desktop only) -->
     <div class="ipad-device">
       <!-- iPad bezel/frame -->
@@ -124,5 +148,15 @@
     border-radius: 0;
     box-shadow: none;
   }
+}
+
+/* Mobile wrapper - completely separate from iPad frame */
+.mobile-wrapper {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #0f172a;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 </style>

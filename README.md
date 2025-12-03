@@ -27,6 +27,7 @@ A digital game facilitator for the analog quiz/poker card game. The app is place
 - **Cookie-based question tracking**: Avoids question repetition
 - **Question rating**: 5-star rating system with vote manipulation protection
 - **Source URL display**: Clickable link to source when solution is revealed
+- **Responsive design**: Separate layouts for desktop (iPad frame), tablet, and mobile portrait
 
 ### Public Question Submission
 - Form with category, question, numeric answer, hints, source

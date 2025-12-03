@@ -384,4 +384,27 @@ function goBack() {
     width: calc((100% - 1.5rem) / 3);
   }
 }
+
+/* Mobile portrait: scrollable, stacked layout */
+@media (max-width: 767px) and (orientation: portrait) {
+  .setup-screen {
+    @apply p-4;
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: auto;
+  }
+
+  .setup-card {
+    @apply flex-none;
+  }
+
+  .player-names-grid {
+    @apply grid-cols-1;
+  }
+
+  .start-btn {
+    height: auto;
+    @apply py-4;
+  }
+}
 </style>

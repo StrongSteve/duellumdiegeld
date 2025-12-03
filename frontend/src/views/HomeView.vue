@@ -128,4 +128,19 @@ onMounted(async () => {
   @apply py-4 text-center text-slate-500 text-xs;
   flex-shrink: 0;
 }
+
+/* Mobile portrait: scrollable layout */
+@media (max-width: 767px) and (orientation: portrait) {
+  .home-view {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .home-main {
+    @apply flex-none py-8;
+    overflow: visible;
+  }
+}
 </style>

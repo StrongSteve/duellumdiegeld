@@ -424,4 +424,22 @@ const isSolutionUnlocked = computed(() => {
     width: calc((100% - 1.5rem) / 3);
   }
 }
+
+/* Mobile portrait: scrollable layout */
+@media (max-width: 767px) and (orientation: portrait) {
+  .main-game-screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: auto;
+    @apply pb-6;
+  }
+
+  .game-left {
+    @apply gap-3;
+  }
+
+  .logo-area {
+    display: none;
+  }
+}
 </style>
