@@ -84,12 +84,12 @@ function accept() {
 .modal-container {
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   border-radius: 1.5rem;
-  max-width: 700px;
+  max-width: 600px;
   width: 100%;
   max-height: calc(100vh - 2rem);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 2rem 2.5rem;
+  padding: 1.25rem 1.5rem;
   text-align: center;
   box-shadow:
     0 25px 50px -12px rgba(0, 0, 0, 0.5),
@@ -110,37 +110,37 @@ function accept() {
 }
 
 .tv-icon {
-  font-size: 3rem;
-  margin-bottom: 0.5rem;
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
   filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5));
 }
 
 .modal-title {
   font-family: 'Oswald', sans-serif;
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #fbbf24;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 1rem 0;
 }
 
 .section-title {
   font-family: 'Oswald', sans-serif;
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #fbbf24;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 0.5rem 0;
   text-align: left;
 }
 
 .modal-text {
   color: #cbd5e1;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  margin: 0 0 0.75rem 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0 0 0.5rem 0;
   text-align: left;
 }
 
@@ -149,26 +149,26 @@ function accept() {
 }
 
 .copyright-notice {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: #94a3b8;
   font-style: italic;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.25rem 0;
   text-align: left;
 }
 
 .divider {
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.3), transparent);
-  margin: 1.25rem 0;
+  margin: 0.75rem 0;
 }
 
 .joyn-link {
   display: block;
   color: #fbbf24;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   text-decoration: none;
   transition: all 0.2s;
-  margin: 1.25rem 0;
+  margin: 0.75rem 0;
 }
 
 .joyn-link:hover {
@@ -177,7 +177,7 @@ function accept() {
 }
 
 .accept-btn {
-  margin-top: 1rem;
+  margin-top: 0.75rem;
 }
 
 /* Transitions */
