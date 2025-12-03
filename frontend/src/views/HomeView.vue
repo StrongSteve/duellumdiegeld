@@ -82,7 +82,7 @@ onMounted(async () => {
           <div class="text-3xl mb-2">💡</div>
           <h3 class="text-sm font-semibold text-white mb-1">Hinweise</h3>
           <p class="text-slate-400 text-xs">
-            Mit jedem Hinweis kommt ihr der Antwort näher – oder eure Gegner auch!
+            Mit jedem Hinweis könnt ihr eure Antwort besser einschätzen. Aber eure Gegner auch!
           </p>
         </div>
 
