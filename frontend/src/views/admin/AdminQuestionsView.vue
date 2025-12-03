@@ -251,102 +251,99 @@ function logout() {
 
       <!-- Table -->
       <div v-else class="card overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="admin-table w-full">
-            <thead>
-              <tr>
-                <th>Frage</th>
-                <th>Kategorie</th>
-                <th>Antwort</th>
-                <th class="sortable-header" @click="toggleSort('played')">
-                  Gespielt
+        <table class="admin-table w-full table-fixed">
+          <thead>
+            <tr>
+              <th class="w-[35%]">Frage</th>
+              <th class="w-[8%]">Kat.</th>
+              <th class="w-[12%]">Antwort</th>
+              <th class="w-[6%] sortable-header" @click="toggleSort('played')">
+                <span class="flex items-center gap-1">
+                  #
                   <span v-if="sortField === 'played'" class="sort-indicator">
                     {{ sortOrder === 'desc' ? '▼' : '▲' }}
                   </span>
-                </th>
-                <th class="sortable-header" @click="toggleSort('rating')">
-                  Bewertung
+                </span>
+              </th>
+              <th class="w-[8%] sortable-header" @click="toggleSort('rating')">
+                <span class="flex items-center gap-1">
+                  ★
                   <span v-if="sortField === 'rating'" class="sort-indicator">
                     {{ sortOrder === 'desc' ? '▼' : '▲' }}
                   </span>
-                </th>
-                <th>Status</th>
-                <th class="sortable-header" @click="toggleSort('date')">
+                </span>
+              </th>
+              <th class="w-[8%]">Status</th>
+              <th class="w-[8%] sortable-header" @click="toggleSort('date')">
+                <span class="flex items-center gap-1">
                   Datum
                   <span v-if="sortField === 'date'" class="sort-indicator">
                     {{ sortOrder === 'desc' ? '▼' : '▲' }}
                   </span>
-                </th>
-                <th>Aktionen</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="question in filteredQuestions" :key="question.id">
-                <td class="max-w-md">
-                  <p class="text-slate-200 truncate">
-                    {{ question.questionText }}
-                  </p>
-                  <p v-if="question.contributorName" class="text-slate-500 text-xs mt-1">
-                    von {{ question.contributorName }}
-                  </p>
-                </td>
-                <td>
-                  <span class="badge badge-primary text-xs">
-                    {{ CategoryLabels[question.category] }}
+                </span>
+              </th>
+              <th class="w-[15%]">Aktionen</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="question in filteredQuestions" :key="question.id">
+              <td>
+                <p class="text-slate-200 truncate text-sm" :title="question.questionText">
+                  {{ question.questionText }}
+                </p>
+              </td>
+              <td>
+                <span class="badge badge-primary text-xs">
+                  {{ CategoryLabels[question.category].substring(0, 4) }}
+                </span>
+              </td>
+              <td>
+                <span class="text-gold-400 font-medium text-sm">
+                  {{ question.answerValue.toLocaleString('de-DE') }}
+                </span>
+                <span v-if="question.answerUnit" class="text-slate-400 text-xs ml-1">
+                  {{ question.answerUnit }}
+                </span>
+              </td>
+              <td>
+                <span class="text-slate-300 text-sm">
+                  {{ question.playedCount || 0 }}
+                </span>
+              </td>
+              <td>
+                <div class="rating-display">
+                  <span v-if="question.ratingCount > 0" class="rating-stars">
+                    <span class="rating-value text-sm">{{ getAverageRating(question).toFixed(1) }}</span>
                   </span>
-                </td>
-                <td>
-                  <span class="text-gold-400 font-medium">
-                    {{ question.answerValue.toLocaleString('de-DE') }}
-                  </span>
-                  <span v-if="question.answerUnit" class="text-slate-400 text-sm ml-1">
-                    {{ question.answerUnit }}
-                  </span>
-                </td>
-                <td>
-                  <span class="text-slate-300">
-                    {{ question.playedCount || 0 }}x
-                  </span>
-                </td>
-                <td>
-                  <div class="rating-display">
-                    <span v-if="question.ratingCount > 0" class="rating-stars">
-                      <span class="star-filled">★</span>
-                      <span class="rating-value">{{ getAverageRating(question).toFixed(1) }}</span>
-                    </span>
-                    <span v-else class="rating-none">–</span>
-                    <span v-if="question.ratingCount > 0" class="rating-count">
-                      ({{ question.ratingCount }})
-                    </span>
-                  </div>
-                </td>
-                <td>
-                  <span :class="['badge text-xs', getStatusBadgeClass(question.status)]">
-                    {{ StatusLabels[question.status] }}
-                  </span>
-                </td>
-                <td class="text-slate-400 text-sm">
-                  {{ new Date(question.createdAt).toLocaleDateString('de-DE') }}
-                </td>
-                <td>
-                  <div class="flex gap-2">
-                    <RouterLink :to="`/admin/questions/${question.id}`">
-                      <button class="px-3 py-1 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded transition-colors">
-                        Bearbeiten
-                      </button>
-                    </RouterLink>
-                    <button
-                      class="px-3 py-1 text-sm bg-danger-600/20 hover:bg-danger-600/40 text-danger-500 rounded transition-colors"
-                      @click="deleteQuestion(question)"
-                    >
-                      Löschen
+                  <span v-else class="rating-none text-sm">–</span>
+                </div>
+              </td>
+              <td>
+                <span :class="['badge text-xs', getStatusBadgeClass(question.status)]">
+                  {{ StatusLabels[question.status].substring(0, 3) }}
+                </span>
+              </td>
+              <td class="text-slate-400 text-xs">
+                {{ new Date(question.createdAt).toLocaleDateString('de-DE') }}
+              </td>
+              <td>
+                <div class="flex gap-1">
+                  <RouterLink :to="`/admin/questions/${question.id}`">
+                    <button class="px-2 py-1 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded transition-colors">
+                      Edit
                     </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                  </RouterLink>
+                  <button
+                    class="px-2 py-1 text-xs bg-danger-600/20 hover:bg-danger-600/40 text-danger-500 rounded transition-colors"
+                    @click="deleteQuestion(question)"
+                  >
+                    Del
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
         <!-- Empty State -->
         <div v-if="filteredQuestions.length === 0" class="p-12 text-center">

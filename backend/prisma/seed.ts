@@ -17,14 +17,16 @@ function parseAnswerValue(answer: string): number {
 
 // Helper to extract unit from answer
 function extractUnit(answer: string): string | null {
-  const match = answer.match(/[\d,.\s]+(.+)/);
+  // Match number at start, then capture everything after
+  // The number pattern includes digits, dots (thousand separator), commas (decimal), and spaces
+  const match = answer.match(/^[\d,.]+\s*(.*)$/);
   if (match && match[1]) {
     const unit = match[1].trim();
-    // Skip common non-units
-    if (['Mio', 'Millionen', 'Milliarden'].includes(unit)) {
-      return unit;
+    // Return null if empty or if it's just digits (not a real unit)
+    if (!unit || /^\d+$/.test(unit)) {
+      return null;
     }
-    return unit || null;
+    return unit;
   }
   return null;
 }
