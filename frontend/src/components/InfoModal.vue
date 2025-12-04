@@ -219,6 +219,7 @@ onMounted(() => {
             <!-- Version Info Section -->
             <section class="version-section">
               <div class="version-info">
+                <span class="version-label">Version:</span>
                 <span class="version-name">{{ funnyVersionName }}</span>
                 <span class="version-hash">({{ commitHash }})</span>
               </div>
@@ -395,6 +396,10 @@ onMounted(() => {
 
 .version-info {
   @apply flex items-center gap-2;
+}
+
+.version-label {
+  @apply text-sm text-slate-400;
 }
 
 .version-name {
