@@ -51,9 +51,10 @@ export class QuestionsController {
   async rateQuestion(@Body() dto: RateQuestionDto, @Req() req: Request) {
     // Get IP from x-forwarded-for header (for proxied requests) or fall back to connection IP
     const forwardedFor = req.headers['x-forwarded-for'];
-    const ip = typeof forwardedFor === 'string'
-      ? forwardedFor.split(',')[0].trim()
-      : req.ip || req.socket.remoteAddress || 'unknown';
+    const ip =
+      typeof forwardedFor === 'string'
+        ? forwardedFor.split(',')[0].trim()
+        : req.ip || req.socket.remoteAddress || 'unknown';
 
     return this.questionsService.rateQuestion(dto.questionId, dto.rating, ip);
   }

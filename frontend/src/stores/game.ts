@@ -3,8 +3,11 @@ import { ref, computed } from 'vue'
 import { questionsApi, gameApi } from '@/services/api'
 import { GameState, type Question, type GameSettings, type Player } from '@/types'
 import { GamePhase } from '@/types/gamePhases'
-import { getPlayedQuestionIds, addPlayedQuestionId, clearPlayedQuestions } from '@/utils/cookies'
-import { addPlayedQuestionText, clearPlayedQuestionTexts } from '@/utils/playedQuestionsStorage'
+import {
+  getPlayedQuestionIds,
+  addPlayedQuestion,
+  clearPlayedQuestions
+} from '@/utils/playedQuestionsDb'
 
 // LocalStorage Keys
 const STORAGE_KEYS = {
@@ -243,9 +246,9 @@ export const useGameStore = defineStore('game', () => {
     error.value = null
 
     try {
-      // Combine session-used questions with cookie-stored played questions
-      const cookiePlayedIds = getPlayedQuestionIds()
-      const allExcludedIds = [...new Set([...usedQuestionIds.value, ...cookiePlayedIds])]
+      // Combine session-used questions with IndexedDB-stored played questions
+      const storedPlayedIds = await getPlayedQuestionIds()
+      const allExcludedIds = [...new Set([...usedQuestionIds.value, ...storedPlayedIds])]
 
       const response = await questionsApi.getRandom(allExcludedIds)
 
@@ -259,11 +262,8 @@ export const useGameStore = defineStore('game', () => {
       currentQuestion.value = response.question
       usedQuestionIds.value.push(response.question.id)
 
-      // Store question ID in cookie to prevent repeats across sessions
-      addPlayedQuestionId(response.question.id)
-
-      // Store question text in localStorage for display in info modal
-      addPlayedQuestionText(response.question.id, response.question.questionText)
+      // Store question in IndexedDB to prevent repeats across sessions
+      await addPlayedQuestion(response.question.id, response.question.questionText)
 
       currentHintIndex.value = 0
       bettingRoundNumber.value = 1
@@ -387,10 +387,9 @@ export const useGameStore = defineStore('game', () => {
     error.value = null
   }
 
-  // Reset played questions history (stored in cookie and localStorage)
-  function resetPlayedQuestionsHistory() {
-    clearPlayedQuestions()
-    clearPlayedQuestionTexts()
+  // Reset played questions history (stored in IndexedDB)
+  async function resetPlayedQuestionsHistory() {
+    await clearPlayedQuestions()
   }
 
   // Check if there's an active session (after browser reload)

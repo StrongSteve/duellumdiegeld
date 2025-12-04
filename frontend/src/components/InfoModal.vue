@@ -9,8 +9,10 @@
  */
 
 import { ref, computed, onMounted, watch } from 'vue'
-import { clearPlayedQuestions as clearCookie } from '@/utils/cookies'
-import { getPlayedQuestionTexts, clearPlayedQuestionTexts } from '@/utils/playedQuestionsStorage'
+import {
+  getPlayedQuestionTexts,
+  clearPlayedQuestions
+} from '@/utils/playedQuestionsDb'
 
 const props = defineProps<{
   isOpen: boolean
@@ -87,14 +89,13 @@ function loadSystemInfo() {
 }
 
 // Load played questions
-function loadPlayedQuestions() {
-  playedQuestions.value = getPlayedQuestionTexts()
+async function loadPlayedQuestions() {
+  playedQuestions.value = await getPlayedQuestionTexts()
 }
 
 // Clear played questions
-function clearPlayedQuestionsHistory() {
-  clearCookie()
-  clearPlayedQuestionTexts()
+async function clearPlayedQuestionsHistory() {
+  await clearPlayedQuestions()
   playedQuestions.value = []
 }
 
@@ -267,7 +268,7 @@ onMounted(() => {
             <div class="footer-notice">
               <span class="notice-icon">💾</span>
               <p>
-                Diese Informationen werden lokal in einem Cookie gespeichert.
+                Die gespielten Fragen werden lokal im Browser gespeichert.
                 In einem anderen Browser oder nach dem Löschen der Browser-Daten
                 sind diese Informationen nicht mehr verfügbar.
               </p>

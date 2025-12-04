@@ -13,10 +13,7 @@ import { StartupService } from '../startup/startup.service';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (
-        configService: ConfigService,
-        startupService: StartupService,
-      ) => ({
+      useFactory: async (configService: ConfigService, startupService: StartupService) => ({
         secret: startupService.jwtSecret,
         signOptions: {
           expiresIn: configService.get<string>('JWT_EXPIRATION') || '24h',

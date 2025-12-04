@@ -242,7 +242,8 @@ function handleShowdownDismissed() {
 
 <style scoped>
 .game-view {
-  @apply min-h-screen bg-slate-900;
+  @apply h-screen bg-slate-900;
+  @apply overflow-hidden;
 }
 
 /* Loading state */

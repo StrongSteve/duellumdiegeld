@@ -82,9 +82,6 @@ export class AdminController {
     @Body() dto: ImportQuestionsDto,
     @Query('skipDuplicates') skipDuplicates?: string,
   ) {
-    return this.adminService.importQuestions(
-      dto,
-      skipDuplicates !== 'false',
-    );
+    return this.adminService.importQuestions(dto, skipDuplicates !== 'false');
   }
 }

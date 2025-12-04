@@ -108,7 +108,7 @@ onUnmounted(() => {
   height: 100%;
   background: #0f172a;
   border-radius: 8px;
-  overflow: auto;
+  overflow: hidden;
   position: relative;
   /* Screen bezel reflection effect */
   box-shadow:

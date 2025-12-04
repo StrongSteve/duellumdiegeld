@@ -90,8 +90,7 @@ export class LoginRateLimiterService {
     // Calculate lockout time: 5s, 50s, 500s, etc. (exponential backoff)
     // First failure = 5s, second = 50s, third = 500s, etc.
     const lockoutSeconds = Math.min(
-      this.BASE_LOCKOUT_SECONDS *
-        Math.pow(this.LOCKOUT_MULTIPLIER, attempt.failedAttempts - 1),
+      this.BASE_LOCKOUT_SECONDS * Math.pow(this.LOCKOUT_MULTIPLIER, attempt.failedAttempts - 1),
       this.MAX_LOCKOUT_SECONDS,
     );
 

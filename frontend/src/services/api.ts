@@ -11,45 +11,192 @@ import type {
 
 const API_BASE = '/api'
 
+// Default retry configuration
+const DEFAULT_RETRY_CONFIG = {
+  maxRetries: 3,
+  baseDelayMs: 1000,
+  maxDelayMs: 10000,
+  retryableStatusCodes: [408, 429, 500, 502, 503, 504]
+}
+
 class ApiError extends Error {
   constructor(
     public status: number,
-    message: string
+    message: string,
+    public isRetryable: boolean = false
   ) {
     super(message)
     this.name = 'ApiError'
   }
 }
 
+interface RetryConfig {
+  maxRetries?: number
+  baseDelayMs?: number
+  maxDelayMs?: number
+  retryableStatusCodes?: number[]
+}
+
+interface FetchOptions extends RequestInit {
+  retry?: RetryConfig | false
+  timeout?: number
+}
+
+/**
+ * Calculates exponential backoff delay with jitter
+ */
+function calculateDelay(attempt: number, baseDelay: number, maxDelay: number): number {
+  const exponentialDelay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay)
+  // Add random jitter (0-25% of the delay)
+  const jitter = exponentialDelay * Math.random() * 0.25
+  return exponentialDelay + jitter
+}
+
+/**
+ * Sleeps for the specified duration
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+/**
+ * Centralized API fetch with retry logic and error handling
+ */
 async function fetchApi<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: FetchOptions = {}
 ): Promise<T> {
+  const { retry, timeout = 30000, ...fetchOptions } = options
+  const retryConfig = retry === false ? null : { ...DEFAULT_RETRY_CONFIG, ...retry }
+
   const token = localStorage.getItem('adminToken')
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
-    ...options.headers
+    ...fetchOptions.headers
   }
 
   if (token) {
     ;(headers as Record<string, string>)['Authorization'] = `Bearer ${token}`
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
-    ...options,
-    headers
-  })
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
-    throw new ApiError(
-      response.status,
-      errorData.message || `HTTP-Fehler: ${response.status}`
-    )
+  let lastError: ApiError | null = null
+  const maxAttempts = retryConfig ? retryConfig.maxRetries + 1 : 1
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
+        ...fetchOptions,
+        headers,
+        signal: controller.signal
+      })
+
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        const isRetryable =
+          retryConfig?.retryableStatusCodes?.includes(response.status) ?? false
+
+        lastError = new ApiError(
+          response.status,
+          errorData.message || getErrorMessage(response.status),
+          isRetryable
+        )
+
+        // Only retry if it's a retryable error and we have attempts left
+        if (isRetryable && retryConfig && attempt < retryConfig.maxRetries) {
+          const delay = calculateDelay(
+            attempt,
+            retryConfig.baseDelayMs,
+            retryConfig.maxDelayMs
+          )
+          console.warn(
+            `API call to ${endpoint} failed (attempt ${attempt + 1}/${maxAttempts}), retrying in ${Math.round(delay)}ms...`
+          )
+          await sleep(delay)
+          continue
+        }
+
+        throw lastError
+      }
+
+      return response.json()
+    } catch (error) {
+      clearTimeout(timeoutId)
+
+      if (error instanceof ApiError) {
+        throw error
+      }
+
+      // Handle network errors and timeouts
+      const isNetworkError =
+        error instanceof TypeError ||
+        (error instanceof DOMException && error.name === 'AbortError')
+
+      lastError = new ApiError(
+        0,
+        isNetworkError ? 'Netzwerkfehler - Bitte Verbindung überprüfen' : 'Unbekannter Fehler',
+        isNetworkError
+      )
+
+      // Retry network errors
+      if (isNetworkError && retryConfig && attempt < retryConfig.maxRetries) {
+        const delay = calculateDelay(
+          attempt,
+          retryConfig.baseDelayMs,
+          retryConfig.maxDelayMs
+        )
+        console.warn(
+          `Network error on ${endpoint} (attempt ${attempt + 1}/${maxAttempts}), retrying in ${Math.round(delay)}ms...`
+        )
+        await sleep(delay)
+        continue
+      }
+
+      throw lastError
+    }
   }
 
-  return response.json()
+  // Should not reach here, but just in case
+  throw lastError || new ApiError(0, 'Unbekannter Fehler')
+}
+
+/**
+ * Get user-friendly error message for HTTP status codes
+ */
+function getErrorMessage(status: number): string {
+  switch (status) {
+    case 400:
+      return 'Ungültige Anfrage'
+    case 401:
+      return 'Nicht autorisiert - Bitte erneut anmelden'
+    case 403:
+      return 'Zugriff verweigert'
+    case 404:
+      return 'Nicht gefunden'
+    case 408:
+      return 'Zeitüberschreitung - Bitte erneut versuchen'
+    case 409:
+      return 'Konflikt - Daten wurden bereits geändert'
+    case 422:
+      return 'Ungültige Daten'
+    case 429:
+      return 'Zu viele Anfragen - Bitte warten'
+    case 500:
+      return 'Serverfehler - Bitte später erneut versuchen'
+    case 502:
+      return 'Server nicht erreichbar - Bitte später erneut versuchen'
+    case 503:
+      return 'Service vorübergehend nicht verfügbar'
+    case 504:
+      return 'Server-Zeitüberschreitung - Bitte später erneut versuchen'
+    default:
+      return `HTTP-Fehler: ${status}`
+  }
 }
 
 // Health check API

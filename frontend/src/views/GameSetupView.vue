@@ -166,28 +166,32 @@ function goBack() {
 
 <style scoped>
 .setup-screen {
-  @apply min-h-screen;
+  @apply h-full;
   @apply bg-slate-900;
-  @apply p-4 md:p-6;
+  @apply p-4;
   @apply relative;
-  padding-top: max(env(safe-area-inset-top), 1rem);
-  padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+  @apply overflow-hidden;
+  @apply flex flex-col;
+  box-sizing: border-box;
 }
 
 .setup-container {
-  @apply max-w-7xl mx-auto;
-  @apply flex gap-6;
-  @apply h-full;
+  @apply max-w-7xl mx-auto w-full;
+  @apply flex flex-col;
+  @apply flex-1;
+  @apply min-h-0;
 }
 
 .setup-left {
   @apply flex-1;
-  @apply flex flex-col gap-4;
+  @apply flex flex-col gap-3;
+  @apply min-h-0;
 }
 
 /* Top row: Title + Logo side by side - NEVER wrap */
 .setup-top-row {
   @apply flex gap-4 items-stretch;
+  @apply flex-shrink-0;
   flex-wrap: nowrap;
 }
 
@@ -198,13 +202,13 @@ function goBack() {
 }
 
 .setup-title {
-  @apply text-2xl md:text-3xl font-display font-bold text-white;
+  @apply text-2xl font-display font-bold text-white;
 }
 
 .logo-area {
   @apply flex;
   flex: 0 0 auto;
-  width: 220px;
+  width: 200px;
 }
 
 /* Main content card - matches game cards */
@@ -212,22 +216,26 @@ function goBack() {
   @apply bg-slate-800/60;
   @apply rounded-2xl;
   @apply border border-slate-700/50;
-  @apply p-6;
+  @apply p-4;
   @apply flex-1;
-  @apply space-y-6;
+  @apply flex flex-col gap-4;
+  @apply min-h-0;
+  @apply overflow-hidden;
 }
 
 .error-message {
-  @apply p-4 bg-danger-500/20 border border-danger-500/50 rounded-xl;
-  @apply text-danger-400 text-center;
+  @apply p-3 bg-danger-500/20 border border-danger-500/50 rounded-xl;
+  @apply text-danger-400 text-center text-sm;
+  @apply flex-shrink-0;
 }
 
 .setup-section {
-  @apply space-y-3;
+  @apply space-y-2;
+  @apply flex-shrink-0;
 }
 
 .setup-label {
-  @apply block text-lg font-semibold text-slate-200;
+  @apply block text-base font-semibold text-slate-200;
 }
 
 /* Player count buttons */
@@ -236,8 +244,8 @@ function goBack() {
 }
 
 .player-count-btn {
-  @apply w-12 h-12 rounded-xl;
-  @apply font-bold text-lg;
+  @apply w-10 h-10 rounded-lg;
+  @apply font-bold text-base;
   @apply transition-all duration-200;
   @apply bg-slate-700 text-slate-300;
   @apply hover:bg-slate-600;
@@ -251,7 +259,7 @@ function goBack() {
 
 /* Player name inputs - 4 columns on desktop */
 .player-names-grid {
-  @apply grid grid-cols-2 md:grid-cols-4 gap-3;
+  @apply grid grid-cols-4 gap-2;
 }
 
 .player-name-input {
@@ -259,23 +267,25 @@ function goBack() {
 }
 
 .player-name-index {
-  @apply w-7 h-7 rounded-full;
+  @apply w-6 h-6 rounded-full;
   @apply bg-slate-700 text-slate-400;
   @apply flex items-center justify-center;
-  @apply text-sm font-bold;
+  @apply text-xs font-bold;
   @apply flex-shrink-0;
 }
 
 .player-name-input .input {
   @apply flex-1;
   @apply text-sm;
-  @apply py-2 px-3;
+  @apply py-1.5 px-2;
+  min-width: 0;
 }
 
 /* Action row - matches main game */
 .action-row {
   @apply flex items-stretch gap-4;
-  @apply mt-4;
+  @apply mt-auto pt-3;
+  @apply flex-shrink-0;
 }
 
 .back-btn {
@@ -296,7 +306,7 @@ function goBack() {
 }
 
 .start-btn {
-  @apply w-full py-4 px-6;
+  @apply w-full py-3 px-4;
   @apply text-base font-bold;
   @apply text-slate-900;
   @apply rounded-xl;
@@ -306,7 +316,6 @@ function goBack() {
   @apply text-center;
   background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
   box-shadow: 0 4px 20px rgba(251, 191, 36, 0.3);
-  height: 72px;
   @apply flex items-center justify-center;
 }
 
@@ -356,37 +365,9 @@ function goBack() {
   .action-area {
     width: 100%;
   }
-}
 
-/* iPad landscape specific */
-@media (min-width: 1024px) and (max-height: 800px) {
-  .setup-screen {
-    @apply p-3;
-  }
-
-  .setup-container {
-    @apply gap-4;
-  }
-
-  .setup-left {
-    @apply gap-3;
-  }
-
-  .setup-card {
-    @apply p-4;
-    @apply space-y-4;
-  }
-
-  .logo-area {
-    width: 200px;
-  }
-
-  .action-row {
-    @apply mt-3;
-  }
-
-  .action-area {
-    width: calc((100% - 1.5rem) / 3);
+  .player-names-grid {
+    @apply grid-cols-2;
   }
 }
 
@@ -397,6 +378,7 @@ function goBack() {
     min-height: 100vh;
     min-height: 100dvh;
     height: auto;
+    @apply overflow-auto;
   }
 
   .setup-card {
@@ -405,11 +387,6 @@ function goBack() {
 
   .player-names-grid {
     @apply grid-cols-1;
-  }
-
-  .start-btn {
-    height: auto;
-    @apply py-4;
   }
 }
 </style>

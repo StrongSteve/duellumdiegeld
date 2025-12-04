@@ -283,13 +283,16 @@ const isSolutionUnlocked = computed(() => {
 
 <style scoped>
 .main-game-screen {
-  @apply min-h-screen;
+  @apply h-screen;
   @apply bg-slate-900;
   @apply p-4 md:p-6;
   @apply relative;
+  @apply overflow-hidden;
   /* Safe area padding */
   padding-top: max(env(safe-area-inset-top), 1rem);
   padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+  /* Prevent any overflow */
+  box-sizing: border-box;
 }
 
 .game-container {
@@ -437,6 +440,7 @@ const isSolutionUnlocked = computed(() => {
     min-height: 100dvh;
     height: auto;
     @apply pb-6;
+    @apply overflow-auto;
   }
 
   .game-left {
