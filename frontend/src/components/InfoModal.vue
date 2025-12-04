@@ -26,6 +26,32 @@ const emit = defineEmits<{
 const commitHash = __COMMIT_HASH__
 const buildTime = __BUILD_TIME__
 
+// Funny version name generator (Joko & Klaas universe themed)
+const funnyVersionName = computed(() => {
+  // Adjectives inspired by Joko & Klaas show vibes
+  const adjectives = [
+    'Ausgehaltener', 'Duellierender', 'Lachender', 'Heulender',
+    'Gewagter', 'Gesprengter', 'Verzockter', 'Geduelltter',
+    'Ahnungsloser', 'Übermütiger', 'Eskalierter', 'Entfesselter',
+    'Tollkühner', 'Gescheiterter', 'Siegreicher', 'Bestrafter'
+  ]
+
+  // Nouns from Joko & Klaas universe (shows, segments, running gags)
+  const nouns = [
+    'Weltrekord', 'Teletext', 'HalliGalli', 'Showdown',
+    'Pflegenotstand', 'Männerwelten', 'Sendezeit', 'Wasserloch',
+    'Blindflug', 'Wildcard', 'Endgegner', 'Primetime',
+    'Finalspiel', 'Strafaufgabe', 'Joker', 'Zockerabend'
+  ]
+
+  // Use commit hash to deterministically pick words
+  const hash = commitHash || 'unknown'
+  const adjIndex = parseInt(hash.slice(0, 3), 16) % adjectives.length
+  const nounIndex = parseInt(hash.slice(3, 6), 16) % nouns.length
+
+  return `${adjectives[adjIndex]} ${nouns[nounIndex]}`
+})
+
 // Format build time for display
 const formattedBuildTime = computed(() => {
   try {
@@ -192,12 +218,12 @@ onMounted(() => {
           <div class="modal-body">
             <!-- Version Info Section -->
             <section class="version-section">
-              <div class="version-badge">
-                <span class="version-label">Version</span>
-                <span class="version-value">{{ commitHash }}</span>
+              <div class="version-info">
+                <span class="version-name">{{ funnyVersionName }}</span>
+                <span class="version-hash">({{ commitHash }})</span>
               </div>
               <div class="build-time">
-                Build: {{ formattedBuildTime }}
+                {{ formattedBuildTime }}
               </div>
             </section>
 
@@ -367,17 +393,16 @@ onMounted(() => {
   @apply px-4 py-3;
 }
 
-.version-badge {
+.version-info {
   @apply flex items-center gap-2;
 }
 
-.version-label {
-  @apply text-xs text-slate-400 uppercase tracking-wide;
+.version-name {
+  @apply text-sm text-gold-400 font-semibold;
 }
 
-.version-value {
-  @apply font-mono text-sm text-gold-400 font-semibold;
-  @apply bg-slate-800 px-2 py-0.5 rounded;
+.version-hash {
+  @apply font-mono text-xs text-slate-500;
 }
 
 .build-time {
