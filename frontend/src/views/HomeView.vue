@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import CTAButton from '@/components/CTAButton.vue'
+import InfoButton from '@/components/InfoButton.vue'
 import { questionsApi } from '@/services/api'
 
 const questionCount = ref<number | null>(null)
@@ -18,6 +19,9 @@ onMounted(async () => {
 
 <template>
   <div class="home-view">
+    <!-- Info Button (top left) -->
+    <InfoButton />
+
     <!-- Header -->
     <header class="home-header">
       <div class="flex justify-end">
@@ -106,6 +110,7 @@ onMounted(async () => {
 <style scoped>
 .home-view {
   @apply bg-slate-900;
+  @apply relative;
   height: 100%;
   display: flex;
   flex-direction: column;

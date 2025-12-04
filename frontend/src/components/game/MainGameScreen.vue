@@ -26,6 +26,7 @@ import GameLogoPanel from './GameLogoPanel.vue'
 import GameNextActionButton from './GameNextActionButton.vue'
 import BettingOverlay from './BettingOverlay.vue'
 import ShowdownOverlay from './ShowdownOverlay.vue'
+import InfoButton from '@/components/InfoButton.vue'
 
 const props = defineProps<{
   /** Current game state */
@@ -152,6 +153,9 @@ const isSolutionUnlocked = computed(() => {
 
 <template>
   <div class="main-game-screen">
+    <!-- Info Button (top left) -->
+    <InfoButton />
+
     <!-- Main container -->
     <div class="game-container">
       <!-- Left side: Main content area -->
@@ -282,6 +286,7 @@ const isSolutionUnlocked = computed(() => {
   @apply min-h-screen;
   @apply bg-slate-900;
   @apply p-4 md:p-6;
+  @apply relative;
   /* Safe area padding */
   padding-top: max(env(safe-area-inset-top), 1rem);
   padding-bottom: max(env(safe-area-inset-bottom), 1rem);

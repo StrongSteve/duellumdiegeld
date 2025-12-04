@@ -4,6 +4,7 @@ import { questionsApi, gameApi } from '@/services/api'
 import { GameState, type Question, type GameSettings, type Player } from '@/types'
 import { GamePhase } from '@/types/gamePhases'
 import { getPlayedQuestionIds, addPlayedQuestionId, clearPlayedQuestions } from '@/utils/cookies'
+import { addPlayedQuestionText, clearPlayedQuestionTexts } from '@/utils/playedQuestionsStorage'
 
 // LocalStorage Keys
 const STORAGE_KEYS = {
@@ -261,6 +262,9 @@ export const useGameStore = defineStore('game', () => {
       // Store question ID in cookie to prevent repeats across sessions
       addPlayedQuestionId(response.question.id)
 
+      // Store question text in localStorage for display in info modal
+      addPlayedQuestionText(response.question.id, response.question.questionText)
+
       currentHintIndex.value = 0
       bettingRoundNumber.value = 1
       winnerName.value = null
@@ -383,9 +387,10 @@ export const useGameStore = defineStore('game', () => {
     error.value = null
   }
 
-  // Reset played questions history (stored in cookie)
+  // Reset played questions history (stored in cookie and localStorage)
   function resetPlayedQuestionsHistory() {
     clearPlayedQuestions()
+    clearPlayedQuestionTexts()
   }
 
   // Check if there's an active session (after browser reload)

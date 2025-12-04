@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '@/stores/game'
 import GameLogoPanel from '@/components/game/GameLogoPanel.vue'
+import InfoButton from '@/components/InfoButton.vue'
 
 const router = useRouter()
 const gameStore = useGameStore()
@@ -81,6 +82,9 @@ function goBack() {
 
 <template>
   <div class="setup-screen">
+    <!-- Info Button (top left) -->
+    <InfoButton />
+
     <div class="setup-container">
       <!-- Left side: Setup form -->
       <div class="setup-left">
@@ -165,6 +169,7 @@ function goBack() {
   @apply min-h-screen;
   @apply bg-slate-900;
   @apply p-4 md:p-6;
+  @apply relative;
   padding-top: max(env(safe-area-inset-top), 1rem);
   padding-bottom: max(env(safe-area-inset-bottom), 1rem);
 }
