@@ -4,8 +4,11 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// Get git commit hash (short)
+// Get git commit hash (short) - uses env var in Docker, git command locally
 function getGitCommitHash(): string {
+  if (process.env.VITE_COMMIT_HASH) {
+    return process.env.VITE_COMMIT_HASH
+  }
   try {
     return execSync('git rev-parse --short HEAD').toString().trim()
   } catch {
@@ -13,9 +16,9 @@ function getGitCommitHash(): string {
   }
 }
 
-// Get build timestamp in ISO format
+// Get build timestamp in ISO format - uses env var in Docker, current time locally
 function getBuildTime(): string {
-  return new Date().toISOString()
+  return process.env.VITE_BUILD_TIME || new Date().toISOString()
 }
 
 export default defineConfig({
