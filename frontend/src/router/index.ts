@@ -1,6 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
+// Track if this is the initial page load (browser refresh)
+let isInitialLoad = true
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -67,8 +70,18 @@ const router = createRouter({
   ]
 })
 
-// Navigation Guard für Admin-Routen
+// Navigation Guard
 router.beforeEach((to, _from, next) => {
+  // On initial page load (browser refresh), redirect to home
+  // Exception: admin routes (allow direct access for admins)
+  if (isInitialLoad) {
+    isInitialLoad = false
+    if (to.path !== '/' && !to.path.startsWith('/admin')) {
+      next({ path: '/' })
+      return
+    }
+  }
+
   // Titel setzen
   document.title = to.meta.title
     ? `${to.meta.title} | Das Duell um die Geld`
