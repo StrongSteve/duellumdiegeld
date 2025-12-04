@@ -162,7 +162,7 @@ export class AdminService {
     // Transaktion für das Update
     return this.prisma.$transaction(async (tx) => {
       // Frage aktualisieren
-      const updatedQuestion = await tx.question.update({
+      await tx.question.update({
         where: { id },
         data: {
           category: dto.category as Category | undefined,
