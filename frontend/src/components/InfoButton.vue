@@ -34,7 +34,9 @@ const showModal = ref(false)
 
 <style scoped>
 .info-button-wrapper {
-  @apply absolute top-4 left-4;
+  @apply fixed;
+  top: 1rem;
+  left: 1rem;
   z-index: 40;
 }
 
@@ -63,6 +65,15 @@ const showModal = ref(false)
   .info-button-wrapper {
     top: max(env(safe-area-inset-top), 1rem);
     left: max(env(safe-area-inset-left), 1rem);
+  }
+}
+
+/* Desktop with iPad frame: position inside the frame */
+@media (min-width: 1101px) {
+  .info-button-wrapper {
+    /* On desktop, the iPad frame has padding, so we need to offset */
+    top: calc(2rem + 18px + 1rem); /* wrapper padding + bezel padding + button margin */
+    left: calc(2rem + 18px + 1rem);
   }
 }
 </style>
