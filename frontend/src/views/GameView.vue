@@ -243,7 +243,18 @@ function handleShowdownDismissed() {
 <style scoped>
 .game-view {
   @apply h-screen bg-slate-900;
-  @apply overflow-hidden;
+}
+
+/* Mobile portrait: allow scrolling */
+@media (max-width: 767px) and (orientation: portrait) {
+  .game-view {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 /* Loading state */
