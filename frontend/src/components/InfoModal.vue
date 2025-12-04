@@ -22,6 +22,26 @@ const emit = defineEmits<{
   close: []
 }>()
 
+// Build info (injected at build time)
+const commitHash = __COMMIT_HASH__
+const buildTime = __BUILD_TIME__
+
+// Format build time for display
+const formattedBuildTime = computed(() => {
+  try {
+    const date = new Date(buildTime)
+    return date.toLocaleString('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  } catch {
+    return buildTime
+  }
+})
+
 // System info
 const systemInfo = ref({
   os: '',
@@ -170,6 +190,19 @@ onMounted(() => {
 
           <!-- Content -->
           <div class="modal-body">
+            <!-- Version Info Section -->
+            <section class="version-section">
+              <div class="version-badge">
+                <span class="version-label">Version</span>
+                <span class="version-value">{{ commitHash }}</span>
+              </div>
+              <div class="build-time">
+                Build: {{ formattedBuildTime }}
+              </div>
+            </section>
+
+            <div class="divider"></div>
+
             <!-- System Info Section -->
             <section class="info-section">
               <h3 class="section-title">
@@ -326,6 +359,29 @@ onMounted(() => {
 
 .modal-body {
   @apply px-5 py-4;
+}
+
+.version-section {
+  @apply flex items-center justify-between;
+  @apply bg-slate-700/30 rounded-lg;
+  @apply px-4 py-3;
+}
+
+.version-badge {
+  @apply flex items-center gap-2;
+}
+
+.version-label {
+  @apply text-xs text-slate-400 uppercase tracking-wide;
+}
+
+.version-value {
+  @apply font-mono text-sm text-gold-400 font-semibold;
+  @apply bg-slate-800 px-2 py-0.5 rounded;
+}
+
+.build-time {
+  @apply text-xs text-slate-500;
 }
 
 .info-section {

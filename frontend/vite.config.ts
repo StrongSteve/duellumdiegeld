@@ -1,7 +1,22 @@
 import { fileURLToPath, URL } from 'node:url'
+import { execSync } from 'node:child_process'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
+
+// Get git commit hash (short)
+function getGitCommitHash(): string {
+  try {
+    return execSync('git rev-parse --short HEAD').toString().trim()
+  } catch {
+    return 'unknown'
+  }
+}
+
+// Get build timestamp in ISO format
+function getBuildTime(): string {
+  return new Date().toISOString()
+}
 
 export default defineConfig({
   plugins: [
@@ -85,5 +100,9 @@ export default defineConfig({
         changeOrigin: true
       }
     }
+  },
+  define: {
+    __COMMIT_HASH__: JSON.stringify(getGitCommitHash()),
+    __BUILD_TIME__: JSON.stringify(getBuildTime())
   }
 })
