@@ -28,6 +28,9 @@ A digital game facilitator for the analog quiz/poker card game. The app is place
 - **Question rating**: 5-star rating system with vote manipulation protection
 - **Source URL display**: Clickable link to source when solution is revealed
 - **Responsive design**: Separate layouts for desktop (iPad frame), tablet, and mobile portrait
+- **Disclaimer on startup**: Legal notice displayed on every app start/refresh
+- **Info modal**: System information and played questions history with build version
+- **Browser refresh handling**: Redirects to home screen to ensure proper game flow
 
 ### Public Question Submission
 - Form with category, question, numeric answer, hints, source
@@ -262,3 +265,4 @@ For each question, players must estimate a number. The answer is written down se
 | [ADR-0009](docs/adr/0009-single-container-deployment.md) | Single Container Deployment |
 | [ADR-0010](docs/adr/0010-dual-layer-rating-protection.md) | Dual-Layer Rating Protection |
 | [ADR-0011](docs/adr/0011-responsive-design-strategy.md) | Responsive Design Strategy |
+| [ADR-0012](docs/adr/0012-session-reset-on-refresh.md) | Session Reset on Browser Refresh |

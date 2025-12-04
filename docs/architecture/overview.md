@@ -8,12 +8,12 @@
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
 │  ┌─────────────┐         ┌─────────────┐         ┌─────────────┐       │
-│  │  hCaptcha   │         │   Supabase  │         │   Vercel/   │       │
-│  │   Service   │         │  PostgreSQL │         │   Netlify   │       │
+│  │ Math Captcha│         │  PostgreSQL │         │  Render.com │       │
+│  │   (local)   │         │  (embedded) │         │   (Docker)  │       │
 │  └──────┬──────┘         └──────┬──────┘         └──────┬──────┘       │
 │         │                       │                       │               │
 │         │ CAPTCHA               │ Database              │ Hosting       │
-│         │ Validation            │ Connection            │ (optional)    │
+│         │ Validation            │ Connection            │               │
 │         ▼                       ▼                       ▼               │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
 │  │                    Das Duell um die Geld                        │   │
@@ -45,19 +45,24 @@
 
 ```
 App.vue
+├── iPadFrame (responsive wrapper)
+│   └── RouterView
+├── DisclaimerModal (shown on every start)
 ├── HomeView
-│   └── CTAButton
+│   ├── CTAButton
+│   └── InfoButton → InfoModal
 ├── GameSetupView
 │   └── CTAButton
 ├── GameView
-│   ├── StepIndicator
-│   ├── QuestionCard
-│   ├── HintCard
-│   ├── ExplanationPanel
-│   ├── Timer
-│   ├── GameHelp
-│   │   └── HelpModal
-│   └── CTAButton
+│   ├── MainGameScreen
+│   │   ├── StepIndicator
+│   │   ├── QuestionCard
+│   │   ├── HintCard
+│   │   ├── ExplanationPanel
+│   │   ├── StarRating
+│   │   ├── GameHelp → HelpModal
+│   │   └── CTAButton
+│   └── InfoButton → InfoModal
 ├── SubmitQuestionView
 │   └── CTAButton
 └── Admin Views
@@ -352,6 +357,7 @@ Siehe [Architecture Decision Records](/docs/adr/) für detaillierte Begründunge
 9. **ADR-0009**: Single-Container Deployment (Render.com Free Tier)
 10. **ADR-0010**: Dual-Layer Rating Protection (Vote Manipulation Prevention)
 11. **ADR-0011**: Responsive Design Strategy (Device-specific layouts)
+12. **ADR-0012**: Session Reset on Browser Refresh (UX consistency)
 
 ## 7. Deployment-Architektur
 
