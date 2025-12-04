@@ -23,34 +23,7 @@ const emit = defineEmits<{
 }>()
 
 // Build info (injected at build time)
-const commitHash = __COMMIT_HASH__
 const buildTime = __BUILD_TIME__
-
-// Funny version name generator (Joko & Klaas universe themed)
-const funnyVersionName = computed(() => {
-  // Adjectives inspired by Joko & Klaas show vibes
-  const adjectives = [
-    'Ausgehaltener', 'Duellierender', 'Lachender', 'Heulender',
-    'Gewagter', 'Gesprengter', 'Verzockter', 'Geduelltter',
-    'Ahnungsloser', 'Übermütiger', 'Eskalierter', 'Entfesselter',
-    'Tollkühner', 'Gescheiterter', 'Siegreicher', 'Bestrafter'
-  ]
-
-  // Nouns from Joko & Klaas universe (shows, segments, running gags)
-  const nouns = [
-    'Weltrekord', 'Teletext', 'HalliGalli', 'Showdown',
-    'Pflegenotstand', 'Männerwelten', 'Sendezeit', 'Wasserloch',
-    'Blindflug', 'Wildcard', 'Endgegner', 'Primetime',
-    'Finalspiel', 'Strafaufgabe', 'Joker', 'Zockerabend'
-  ]
-
-  // Use commit hash to deterministically pick words
-  const hash = commitHash || 'unknown'
-  const adjIndex = parseInt(hash.slice(0, 3), 16) % adjectives.length
-  const nounIndex = parseInt(hash.slice(3, 6), 16) % nouns.length
-
-  return `${adjectives[adjIndex]} ${nouns[nounIndex]}`
-})
 
 // Format build time for display
 const formattedBuildTime = computed(() => {
@@ -218,14 +191,8 @@ onMounted(() => {
           <div class="modal-body">
             <!-- Version Info Section -->
             <section class="version-section">
-              <div class="version-info">
-                <span class="version-label">Version:</span>
-                <span class="version-name">{{ funnyVersionName }}</span>
-                <span class="version-hash">({{ commitHash }})</span>
-              </div>
-              <div class="build-time">
-                {{ formattedBuildTime }}
-              </div>
+              <span class="version-label">Version:</span>
+              <span class="build-time">{{ formattedBuildTime }}</span>
             </section>
 
             <div class="divider"></div>
@@ -389,29 +356,17 @@ onMounted(() => {
 }
 
 .version-section {
-  @apply flex items-center justify-between;
+  @apply flex items-center gap-2;
   @apply bg-slate-700/30 rounded-lg;
   @apply px-4 py-3;
-}
-
-.version-info {
-  @apply flex items-center gap-2;
 }
 
 .version-label {
   @apply text-sm text-slate-400;
 }
 
-.version-name {
-  @apply text-sm text-gold-400 font-semibold;
-}
-
-.version-hash {
-  @apply font-mono text-xs text-slate-500;
-}
-
 .build-time {
-  @apply text-xs text-slate-500;
+  @apply text-sm text-gold-400 font-medium;
 }
 
 .info-section {

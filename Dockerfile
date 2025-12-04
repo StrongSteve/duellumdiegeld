@@ -7,23 +7,10 @@
 # =============================================================================
 FROM node:20-alpine AS frontend-builder
 
-# Install git to get commit hash for version info
-RUN apk add --no-cache git
-
-WORKDIR /app
-
-# Copy .git first for version info (git command runs from frontend dir but looks up)
-COPY .git ./.git
-
-# Copy and install frontend
-COPY frontend/package*.json ./frontend/
 WORKDIR /app/frontend
+COPY frontend/package*.json ./
 RUN npm ci
-
-# Copy frontend source
 COPY frontend/ ./
-
-# Build (git will find .git in parent directory)
 RUN npm run build
 
 # =============================================================================

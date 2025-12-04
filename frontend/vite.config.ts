@@ -1,24 +1,11 @@
 import { fileURLToPath, URL } from 'node:url'
-import { execSync } from 'node:child_process'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// Get git commit hash (short) - uses env var in Docker, git command locally
-function getGitCommitHash(): string {
-  if (process.env.VITE_COMMIT_HASH) {
-    return process.env.VITE_COMMIT_HASH
-  }
-  try {
-    return execSync('git rev-parse --short HEAD').toString().trim()
-  } catch {
-    return 'unknown'
-  }
-}
-
-// Get build timestamp in ISO format - uses env var in Docker, current time locally
+// Get build timestamp in ISO format
 function getBuildTime(): string {
-  return process.env.VITE_BUILD_TIME || new Date().toISOString()
+  return new Date().toISOString()
 }
 
 export default defineConfig({
@@ -105,7 +92,6 @@ export default defineConfig({
     }
   },
   define: {
-    __COMMIT_HASH__: JSON.stringify(getGitCommitHash()),
     __BUILD_TIME__: JSON.stringify(getBuildTime())
   }
 })
