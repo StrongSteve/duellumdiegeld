@@ -6,7 +6,7 @@
  * Optimized for iPad landscape (1024x768 with Safari toolbars).
  */
 
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '@/stores/game'
 import { GameState } from '@/types'
@@ -52,11 +52,40 @@ const solutionText = computed(() => {
   return unit ? `${value} ${unit}` : value
 })
 
+// Keep-alive interval to prevent Render from suspending during game
+const KEEP_ALIVE_INTERVAL = 5 * 60 * 1000 // 5 minutes
+let keepAliveTimer: ReturnType<typeof setInterval> | null = null
+
+function startKeepAlive() {
+  if (keepAliveTimer) return
+  keepAliveTimer = setInterval(async () => {
+    try {
+      // Simple health check to keep server awake
+      await fetch(`/api/health?_t=${Date.now()}`, { cache: 'no-store' })
+    } catch {
+      // Ignore errors - just trying to keep server awake
+    }
+  }, KEEP_ALIVE_INTERVAL)
+}
+
+function stopKeepAlive() {
+  if (keepAliveTimer) {
+    clearInterval(keepAliveTimer)
+    keepAliveTimer = null
+  }
+}
+
 // Lifecycle
 onMounted(() => {
   if (!gameStore.hasActiveSession()) {
     router.push('/game/setup')
   }
+  // Start keep-alive to prevent server suspension during game
+  startKeepAlive()
+})
+
+onUnmounted(() => {
+  stopKeepAlive()
 })
 
 // Actions
