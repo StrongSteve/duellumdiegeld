@@ -45,19 +45,30 @@ function checkIfAlreadyRated(): boolean {
 // Computed: Active players count
 const activePlayersCount = computed(() => props.players.filter(p => p.isActive).length)
 
-// Handle star click
+// Handle star click - allow changing until modal closes
 function handleStarClick(rating: number) {
   if (hasRated.value) return
   selectedRating.value = rating
 }
 
-// Handle rate and continue
-function handleContinue() {
+// Submit rating and close modal
+function submitRatingAndClose() {
   if (selectedRating.value > 0 && !hasRated.value) {
     emit('rateQuestion', selectedRating.value)
     hasRated.value = true
   }
+}
+
+// Handle continue to next round
+function handleContinue() {
+  submitRatingAndClose()
   emit('continueGame')
+}
+
+// Handle modal close (X button or backdrop click)
+function handleClose() {
+  submitRatingAndClose()
+  emit('close')
 }
 
 // Toggle player elimination
@@ -103,7 +114,7 @@ watch(() => props.isOpen, (newVal) => {
   <GameModal
     :is-open="isOpen"
     title="Runde beendet"
-    @close="emit('close')"
+    @close="handleClose"
   >
     <div class="round-summary">
       <!-- Rating section -->
