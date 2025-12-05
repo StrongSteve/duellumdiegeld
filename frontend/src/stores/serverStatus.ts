@@ -68,17 +68,8 @@ export const useServerStatusStore = defineStore('serverStatus', () => {
     }, WAKE_THRESHOLD_MS)
 
     // Poll for health until success or timeout
-    while (true) {
-      const elapsed = Date.now() - wakeStartTime.value!
-
-      // Check if we've exceeded max wake time
-      if (elapsed > MAX_WAKE_TIME_MS) {
-        clearTimeout(wakingTimer)
-        state.value = 'error'
-        lastError.value = 'Server nicht erreichbar nach 90 Sekunden. Bitte später erneut versuchen.'
-        return false
-      }
-
+    let elapsed = 0
+    while (elapsed < MAX_WAKE_TIME_MS) {
       // Try health check
       const healthy = await checkHealth()
 
@@ -90,7 +81,14 @@ export const useServerStatusStore = defineStore('serverStatus', () => {
 
       // Wait before next attempt
       await new Promise(resolve => setTimeout(resolve, HEALTH_CHECK_INTERVAL))
+      elapsed = Date.now() - wakeStartTime.value!
     }
+
+    // Exceeded max wake time
+    clearTimeout(wakingTimer)
+    state.value = 'error'
+    lastError.value = 'Server nicht erreichbar nach 90 Sekunden. Bitte später erneut versuchen.'
+    return false
   }
 
   function reset() {
