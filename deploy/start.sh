@@ -8,13 +8,20 @@ echo "=========================================="
 # Create log directory
 mkdir -p /var/log/supervisor
 
-# Check if external DATABASE_URL is provided (e.g., Supabase)
-if [ -n "$DATABASE_URL" ]; then
-    echo "External DATABASE_URL detected - using external database (e.g., Supabase)"
-    USE_EXTERNAL_DB=true
+# Debug: Show if DATABASE_URL is set (without revealing the actual value)
+if [ -z "${DATABASE_URL+x}" ]; then
+    echo "DATABASE_URL: not set"
+elif [ -z "$DATABASE_URL" ]; then
+    echo "DATABASE_URL: set but empty"
+else
+    echo "DATABASE_URL: set (length: ${#DATABASE_URL})"
+fi
 
-    # Export DATABASE_URL for Prisma
-    export DATABASE_URL="$DATABASE_URL"
+# Check if external DATABASE_URL is provided (e.g., Supabase)
+# Use pooler.supabase.com or other external indicators to detect external DB
+if [ -n "$DATABASE_URL" ] && echo "$DATABASE_URL" | grep -qvE "(localhost|127\.0\.0\.1|@postgres:)"; then
+    echo "External DATABASE_URL detected - using external database"
+    USE_EXTERNAL_DB=true
 else
     echo "No external DATABASE_URL - using embedded PostgreSQL"
     USE_EXTERNAL_DB=false
