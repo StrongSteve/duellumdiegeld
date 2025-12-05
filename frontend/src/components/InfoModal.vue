@@ -25,6 +25,9 @@ const emit = defineEmits<{
 // Build info (injected at build time)
 const buildTime = __BUILD_TIME__
 
+// Database info from health endpoint
+const databaseType = ref<string>('...')
+
 // Format build time for display
 const formattedBuildTime = computed(() => {
   try {
@@ -40,6 +43,21 @@ const formattedBuildTime = computed(() => {
     return buildTime
   }
 })
+
+// Fetch database type from health endpoint
+async function loadDatabaseType() {
+  try {
+    const response = await fetch('/api/health')
+    if (response.ok) {
+      const data = await response.json()
+      databaseType.value = data.databaseType || 'Unbekannt'
+    } else {
+      databaseType.value = 'Nicht erreichbar'
+    }
+  } catch {
+    databaseType.value = 'Fehler'
+  }
+}
 
 // System info
 const systemInfo = ref({
@@ -142,6 +160,7 @@ watch(() => props.isOpen, (isOpen) => {
   if (isOpen) {
     loadSystemInfo()
     loadPlayedQuestions()
+    loadDatabaseType()
     document.body.style.overflow = 'hidden'
     document.addEventListener('keydown', handleKeydown)
   } else {
@@ -154,6 +173,7 @@ onMounted(() => {
   if (props.isOpen) {
     loadSystemInfo()
     loadPlayedQuestions()
+    loadDatabaseType()
   }
 })
 </script>
@@ -193,6 +213,9 @@ onMounted(() => {
             <section class="version-section">
               <span class="version-label">Version:</span>
               <span class="build-time">{{ formattedBuildTime }}</span>
+              <span class="version-separator">|</span>
+              <span class="version-label">DB:</span>
+              <span class="database-type">{{ databaseType }}</span>
             </section>
 
             <div class="divider"></div>
@@ -314,8 +337,6 @@ onMounted(() => {
   @apply p-4;
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(4px);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 .modal-container {
@@ -323,15 +344,14 @@ onMounted(() => {
   @apply bg-slate-800 rounded-2xl;
   @apply border border-slate-700;
   @apply shadow-2xl;
-  @apply max-h-[90vh] overflow-y-auto;
   animation: modal-scale-in 0.2s ease-out;
+  overflow: hidden;
 }
 
 .modal-header {
   @apply flex items-center justify-between;
   @apply px-5 py-4;
   @apply border-b border-slate-700/50;
-  @apply sticky top-0 bg-slate-800 z-10;
 }
 
 .modal-title {
@@ -359,14 +379,23 @@ onMounted(() => {
   @apply flex items-center gap-2;
   @apply bg-slate-700/30 rounded-lg;
   @apply px-4 py-3;
+  @apply flex-wrap;
 }
 
 .version-label {
   @apply text-sm text-slate-400;
 }
 
+.version-separator {
+  @apply text-slate-600 mx-1;
+}
+
 .build-time {
   @apply text-sm text-gold-400 font-medium;
+}
+
+.database-type {
+  @apply text-sm text-emerald-400 font-medium;
 }
 
 .info-section {

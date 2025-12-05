@@ -7,14 +7,14 @@
 │                          Externe Systeme                                │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
-│  ┌─────────────┐         ┌─────────────┐         ┌─────────────┐       │
-│  │ Math Captcha│         │  PostgreSQL │         │  Render.com │       │
-│  │   (local)   │         │  (embedded) │         │   (Docker)  │       │
-│  └──────┬──────┘         └──────┬──────┘         └──────┬──────┘       │
-│         │                       │                       │               │
-│         │ CAPTCHA               │ Database              │ Hosting       │
-│         │ Validation            │ Connection            │               │
-│         ▼                       ▼                       ▼               │
+│  ┌─────────────┐   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐ │
+│  │ Math Captcha│   │  PostgreSQL │   │  Supabase/  │   │  Render.com │ │
+│  │   (local)   │   │  (embedded) │   │   Neon      │   │   (Docker)  │ │
+│  └──────┬──────┘   └──────┬──────┘   └──────┬──────┘   └──────┬──────┘ │
+│         │                 │                 │                 │         │
+│         │ CAPTCHA         │ Local DB        │ External DB     │ Hosting │
+│         │ Validation      │ (fallback)      │ (persistent)    │         │
+│         ▼                 ▼                 ▼                 ▼         │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
 │  │                    Das Duell um die Geld                        │   │
 │  │                                                                 │   │
@@ -358,6 +358,7 @@ Siehe [Architecture Decision Records](/docs/adr/) für detaillierte Begründunge
 10. **ADR-0010**: Dual-Layer Rating Protection (Vote Manipulation Prevention)
 11. **ADR-0011**: Responsive Design Strategy (Device-specific layouts)
 12. **ADR-0012**: Session Reset on Browser Refresh (UX consistency)
+13. **ADR-0013**: External Database Strategy (Supabase/Neon support)
 
 ## 7. Deployment-Architektur
 

@@ -1,6 +1,7 @@
 # Render Blueprint for Das Duell um die Geld
 # Deploy with: Connect GitHub repo to Render and select this blueprint
 # See docs/adr/0009-single-container-deployment.md for architecture decision
+# See docs/adr/0013-external-database-strategy.md for database options
 
 services:
   - type: web
@@ -8,7 +9,12 @@ services:
     runtime: docker
     dockerfilePath: ./Dockerfile
     plan: free
-    healthCheckPath: /api/questions/count
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
+      # Optional: Set DATABASE_URL to use external database (e.g., Supabase)
+      # If not set, embedded PostgreSQL is used (data lost on redeploy)
+      # Format: postgresql://user:password@host:port/database?pgbouncer=true&sslmode=require
+      - key: DATABASE_URL
+        sync: false  # Set manually in Render dashboard as secret

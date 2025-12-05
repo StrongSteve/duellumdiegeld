@@ -51,7 +51,7 @@ A digital game facilitator for the analog quiz/poker card game. The app is place
 |-----------|------------|
 | Frontend | Vue 3, Vite, TailwindCSS, Pinia, Vue Router, PWA |
 | Backend | Node.js, NestJS, Prisma ORM |
-| Database | PostgreSQL |
+| Database | PostgreSQL (embedded or external via Supabase/Neon) |
 | Auth | JWT (JSON Web Tokens) with Rate Limiting |
 | Security | Math Captcha (local), bcrypt (12 rounds), exponential login backoff |
 | DevOps | Docker, docker-compose |
@@ -127,6 +127,19 @@ A digital game facilitator for the analog quiz/poker card game. The app is place
 - First start takes ~2-3 minutes (Build + Migrations)
 - Free Tier: Container sleeps after 15 min of inactivity (Cold Start ~30-60s)
 - Admin credentials appear in Render Logs
+
+**Database Persistence (Optional):**
+
+By default, data is lost on redeploy (embedded PostgreSQL). For persistent data:
+
+1. Create a free PostgreSQL database on [Supabase](https://supabase.com) or [Neon](https://neon.tech)
+2. In Render dashboard, add environment variable:
+   - Key: `DATABASE_URL`
+   - Value: Your connection string (e.g., `postgresql://user:pass@host:6543/db?pgbouncer=true`)
+   - Mark as "Secret"
+3. Redeploy the service
+
+See [ADR-0013](docs/adr/0013-external-database-strategy.md) for details.
 
 ### Docker Compose (Local)
 
@@ -266,3 +279,4 @@ For each question, players must estimate a number. The answer is written down se
 | [ADR-0010](docs/adr/0010-dual-layer-rating-protection.md) | Dual-Layer Rating Protection |
 | [ADR-0011](docs/adr/0011-responsive-design-strategy.md) | Responsive Design Strategy |
 | [ADR-0012](docs/adr/0012-session-reset-on-refresh.md) | Session Reset on Browser Refresh |
+| [ADR-0013](docs/adr/0013-external-database-strategy.md) | External Database Strategy |
