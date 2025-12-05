@@ -120,25 +120,43 @@ function markQuestionAsRated(questionId: string): void {
   }
 }
 
-// Handle question rating
-async function handleRateQuestion(rating: number) {
-  if (currentQuestion.value) {
-    // Check if already rated (frontend protection)
-    if (hasRatedQuestion(currentQuestion.value.id)) {
-      console.log('Question already rated (localStorage check)')
+// Handle question rating - supports both old format (number) and new format (object with questionId)
+async function handleRateQuestion(payload: number | { questionId: string; rating: number }) {
+  let questionId: string
+  let rating: number
+
+  // Handle both payload formats for backwards compatibility
+  if (typeof payload === 'number') {
+    // Old format: just the rating number (from MainGameScreen while game is active)
+    if (!currentQuestion.value) {
+      console.log('Cannot rate: no current question')
       return
     }
+    questionId = currentQuestion.value.id
+    rating = payload
+  } else {
+    // New format: object with questionId and rating (from RoundSummaryModal)
+    questionId = payload.questionId
+    rating = payload.rating
+  }
 
-    try {
-      await questionsApi.rateQuestion(currentQuestion.value.id, rating)
-      // Mark as rated in localStorage
-      markQuestionAsRated(currentQuestion.value.id)
-      // Update local question data to reflect the new rating
+  // Check if already rated (frontend protection)
+  if (hasRatedQuestion(questionId)) {
+    console.log('Question already rated (localStorage check)')
+    return
+  }
+
+  try {
+    await questionsApi.rateQuestion(questionId, rating)
+    // Mark as rated in localStorage
+    markQuestionAsRated(questionId)
+    // Update local question data to reflect the new rating (if still available)
+    if (currentQuestion.value && currentQuestion.value.id === questionId) {
       currentQuestion.value.ratingSum = (currentQuestion.value.ratingSum || 0) + rating
       currentQuestion.value.ratingCount = (currentQuestion.value.ratingCount || 0) + 1
-    } catch (err) {
-      console.error('Failed to rate question:', err)
     }
+  } catch (err) {
+    console.error('Failed to rate question:', err)
   }
 }
 

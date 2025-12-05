@@ -28,7 +28,7 @@ const emit = defineEmits<{
   continueGame: []
   eliminatePlayer: [playerName: string]
   reactivatePlayer: [playerName: string]
-  rateQuestion: [rating: number]
+  rateQuestion: [payload: { questionId: string; rating: number }]
 }>()
 
 // Rating state
@@ -51,23 +51,23 @@ function handleStarClick(rating: number) {
   selectedRating.value = rating
 }
 
-// Submit rating and close modal
-function submitRatingAndClose() {
-  if (selectedRating.value > 0 && !hasRated.value) {
-    emit('rateQuestion', selectedRating.value)
+// Submit rating (called before any close action)
+function submitRating() {
+  if (selectedRating.value > 0 && !hasRated.value && props.questionId) {
+    emit('rateQuestion', { questionId: props.questionId, rating: selectedRating.value })
     hasRated.value = true
   }
 }
 
 // Handle continue to next round
 function handleContinue() {
-  submitRatingAndClose()
+  submitRating()
   emit('continueGame')
 }
 
 // Handle modal close (X button or backdrop click)
 function handleClose() {
-  submitRatingAndClose()
+  submitRating()
   emit('close')
 }
 
