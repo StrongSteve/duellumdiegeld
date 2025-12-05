@@ -23,7 +23,7 @@ export const useServerStatusStore = defineStore('serverStatus', () => {
       case 'connecting':
         return 'Verbinde mit Server...'
       case 'waking':
-        return 'Server wird gestartet... (kann bis zu 90 Sekunden dauern)'
+        return 'Server startet... (bis zu 90s)'
       case 'error':
         return lastError.value || 'Server nicht erreichbar'
       case 'ready':
