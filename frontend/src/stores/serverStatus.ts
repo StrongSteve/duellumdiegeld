@@ -49,7 +49,14 @@ export const useServerStatusStore = defineStore('serverStatus', () => {
       })
 
       clearTimeout(timeoutId)
-      return response.ok
+
+      if (!response.ok) {
+        return false
+      }
+
+      // Also check that database is connected
+      const data = await response.json()
+      return data.status === 'ok' && data.database === 'ok'
     } catch {
       return false
     }
