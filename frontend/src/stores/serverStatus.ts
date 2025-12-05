@@ -6,12 +6,13 @@ export type ServerState = 'unknown' | 'connecting' | 'waking' | 'ready' | 'error
 export const useServerStatusStore = defineStore('serverStatus', () => {
   const state = ref<ServerState>('unknown')
   const lastError = ref<string | null>(null)
-  const connectionAttempts = ref(0)
-  const maxAttempts = 3
   const wakeStartTime = ref<number | null>(null)
 
-  // Show waking message after 3 seconds of connecting
-  const WAKE_THRESHOLD_MS = 3000
+  // Configuration
+  const WAKE_THRESHOLD_MS = 3000      // Show "waking" message after 3s
+  const HEALTH_CHECK_TIMEOUT = 10000  // 10s per health check attempt
+  const HEALTH_CHECK_INTERVAL = 3000  // Poll every 3s
+  const MAX_WAKE_TIME_MS = 90000      // Give up after 90 seconds total
 
   const isReady = computed(() => state.value === 'ready')
   const isConnecting = computed(() => state.value === 'connecting' || state.value === 'waking')
@@ -22,7 +23,7 @@ export const useServerStatusStore = defineStore('serverStatus', () => {
       case 'connecting':
         return 'Verbinde mit Server...'
       case 'waking':
-        return 'Server wird gestartet... (kann bis zu 60 Sekunden dauern)'
+        return 'Server wird gestartet... (kann bis zu 90 Sekunden dauern)'
       case 'error':
         return lastError.value || 'Server nicht erreichbar'
       case 'ready':
@@ -35,20 +36,21 @@ export const useServerStatusStore = defineStore('serverStatus', () => {
   async function checkHealth(): Promise<boolean> {
     try {
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 65000) // 65s timeout
+      const timeoutId = setTimeout(() => controller.abort(), HEALTH_CHECK_TIMEOUT)
 
       const response = await fetch('/api/health', {
         method: 'GET',
-        signal: controller.signal
+        signal: controller.signal,
+        // Prevent caching
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       })
 
       clearTimeout(timeoutId)
       return response.ok
-    } catch (err) {
-      // Check if it's a timeout/abort
-      if (err instanceof DOMException && err.name === 'AbortError') {
-        lastError.value = 'Server antwortet nicht (Timeout)'
-      }
+    } catch {
       return false
     }
   }
@@ -56,7 +58,6 @@ export const useServerStatusStore = defineStore('serverStatus', () => {
   async function connect(): Promise<boolean> {
     state.value = 'connecting'
     lastError.value = null
-    connectionAttempts.value++
     wakeStartTime.value = Date.now()
 
     // Start a timer to switch to "waking" state after threshold
@@ -66,73 +67,51 @@ export const useServerStatusStore = defineStore('serverStatus', () => {
       }
     }, WAKE_THRESHOLD_MS)
 
-    try {
-      const healthy = await checkHealth()
+    // Poll for health until success or timeout
+    while (true) {
+      const elapsed = Date.now() - wakeStartTime.value!
 
-      clearTimeout(wakingTimer)
-
-      if (healthy) {
-        state.value = 'ready'
-        connectionAttempts.value = 0
-        return true
-      } else {
-        // Try again if we haven't exceeded max attempts
-        if (connectionAttempts.value < maxAttempts) {
-          // Wait a bit before retrying
-          await new Promise(resolve => setTimeout(resolve, 2000))
-          return connect()
-        }
-
+      // Check if we've exceeded max wake time
+      if (elapsed > MAX_WAKE_TIME_MS) {
+        clearTimeout(wakingTimer)
         state.value = 'error'
-        lastError.value = 'Server nicht erreichbar nach mehreren Versuchen'
+        lastError.value = 'Server nicht erreichbar nach 90 Sekunden. Bitte später erneut versuchen.'
         return false
       }
-    } catch {
-      clearTimeout(wakingTimer)
 
-      if (connectionAttempts.value < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 2000))
-        return connect()
+      // Try health check
+      const healthy = await checkHealth()
+
+      if (healthy) {
+        clearTimeout(wakingTimer)
+        state.value = 'ready'
+        return true
       }
 
-      state.value = 'error'
-      lastError.value = 'Verbindungsfehler'
-      return false
+      // Wait before next attempt
+      await new Promise(resolve => setTimeout(resolve, HEALTH_CHECK_INTERVAL))
     }
   }
 
   function reset() {
     state.value = 'unknown'
     lastError.value = null
-    connectionAttempts.value = 0
     wakeStartTime.value = null
   }
 
   async function retry(): Promise<boolean> {
-    connectionAttempts.value = 0
     return connect()
-  }
-
-  // Called when an API call fails - might indicate server went to sleep
-  function reportApiError(error: string) {
-    // Only report if we thought we were connected
-    if (state.value === 'ready') {
-      lastError.value = error
-      // Don't change state to error immediately, let the UI handle retry
-    }
   }
 
   return {
     state,
     lastError,
-    connectionAttempts,
     isReady,
     isConnecting,
     hasError,
     statusMessage,
     connect,
     reset,
-    retry,
-    reportApiError
+    retry
   }
 })
