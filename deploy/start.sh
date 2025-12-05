@@ -45,7 +45,16 @@ fi
 # Run Prisma migrations
 echo "Running database migrations..."
 cd /app/backend
-npx prisma db push --accept-data-loss
+
+# For Supabase: migrations need direct connection (port 5432), not pooler (port 6543)
+# Create a direct URL by replacing port 6543 with 5432 if using Supabase pooler
+if echo "$DATABASE_URL" | grep -q "pooler.supabase.com:6543"; then
+    DIRECT_URL=$(echo "$DATABASE_URL" | sed 's/:6543/:5432/g' | sed 's/\?pgbouncer=true//g')
+    echo "Supabase detected - using direct connection for migrations"
+    DATABASE_URL="$DIRECT_URL" npx prisma db push --accept-data-loss
+else
+    npx prisma db push --accept-data-loss
+fi
 echo "Database migrations complete!"
 
 # Stop PostgreSQL if started (supervisor will start it)
