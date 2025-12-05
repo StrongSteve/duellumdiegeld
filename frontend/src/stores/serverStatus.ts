@@ -10,9 +10,9 @@ export const useServerStatusStore = defineStore('serverStatus', () => {
 
   // Configuration
   const WAKE_THRESHOLD_MS = 3000      // Show "waking" message after 3s
-  const HEALTH_CHECK_TIMEOUT = 10000  // 10s per health check attempt
-  const HEALTH_CHECK_INTERVAL = 3000  // Poll every 3s
-  const MAX_WAKE_TIME_MS = 90000      // Give up after 90 seconds total
+  const HEALTH_CHECK_TIMEOUT = 15000  // 15s per health check attempt
+  const HEALTH_CHECK_INTERVAL = 5000  // Poll every 5s
+  const MAX_WAKE_TIME_MS = 120000     // Give up after 120 seconds total
 
   const isReady = computed(() => state.value === 'ready')
   const isConnecting = computed(() => state.value === 'connecting' || state.value === 'waking')
@@ -23,7 +23,7 @@ export const useServerStatusStore = defineStore('serverStatus', () => {
       case 'connecting':
         return 'Verbinde mit Server...'
       case 'waking':
-        return 'Server startet... (bis zu 90s)'
+        return 'Server startet... (bis zu 2 Min)'
       case 'error':
         return lastError.value || 'Server nicht erreichbar'
       case 'ready':
@@ -38,12 +38,14 @@ export const useServerStatusStore = defineStore('serverStatus', () => {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), HEALTH_CHECK_TIMEOUT)
 
-      const response = await fetch('/api/health', {
+      // Add timestamp to prevent any caching (service worker, CDN, browser)
+      const url = `/api/health?_t=${Date.now()}`
+      const response = await fetch(url, {
         method: 'GET',
         signal: controller.signal,
-        // Prevent caching
+        cache: 'no-store',
         headers: {
-          'Cache-Control': 'no-cache',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache'
         }
       })
@@ -94,7 +96,7 @@ export const useServerStatusStore = defineStore('serverStatus', () => {
     // Exceeded max wake time
     clearTimeout(wakingTimer)
     state.value = 'error'
-    lastError.value = 'Server nicht erreichbar nach 90 Sekunden. Bitte später erneut versuchen.'
+    lastError.value = 'Server nicht erreichbar nach 2 Minuten. Bitte später erneut versuchen.'
     return false
   }
 
