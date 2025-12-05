@@ -11,12 +11,12 @@ import type {
 
 const API_BASE = '/api'
 
-// Default retry configuration
+// Default retry configuration - longer timeouts for Render cold starts
 const DEFAULT_RETRY_CONFIG = {
   maxRetries: 3,
-  baseDelayMs: 1000,
-  maxDelayMs: 10000,
-  retryableStatusCodes: [408, 429, 500, 502, 503, 504]
+  baseDelayMs: 2000,
+  maxDelayMs: 15000,
+  retryableStatusCodes: [408, 429, 500, 502, 503, 504, 0] // 0 = network error
 }
 
 class ApiError extends Error {
@@ -66,7 +66,8 @@ async function fetchApi<T>(
   endpoint: string,
   options: FetchOptions = {}
 ): Promise<T> {
-  const { retry, timeout = 30000, ...fetchOptions } = options
+  // Longer default timeout for Render cold starts (60s)
+  const { retry, timeout = 60000, ...fetchOptions } = options
   const retryConfig = retry === false ? null : { ...DEFAULT_RETRY_CONFIG, ...retry }
 
   const token = localStorage.getItem('adminToken')
@@ -170,6 +171,8 @@ async function fetchApi<T>(
  */
 function getErrorMessage(status: number): string {
   switch (status) {
+    case 0:
+      return 'Server nicht erreichbar - Der Server startet möglicherweise gerade (bis zu 60 Sekunden)'
     case 400:
       return 'Ungültige Anfrage'
     case 401:
@@ -179,7 +182,7 @@ function getErrorMessage(status: number): string {
     case 404:
       return 'Nicht gefunden'
     case 408:
-      return 'Zeitüberschreitung - Bitte erneut versuchen'
+      return 'Zeitüberschreitung - Server antwortet nicht, bitte erneut versuchen'
     case 409:
       return 'Konflikt - Daten wurden bereits geändert'
     case 422:
@@ -187,27 +190,31 @@ function getErrorMessage(status: number): string {
     case 429:
       return 'Zu viele Anfragen - Bitte warten'
     case 500:
-      return 'Serverfehler - Bitte später erneut versuchen'
+      return 'Serverfehler - Bitte erneut versuchen'
     case 502:
-      return 'Server nicht erreichbar - Bitte später erneut versuchen'
+      return 'Server startet gerade - Bitte einen Moment warten und erneut versuchen'
     case 503:
-      return 'Service vorübergehend nicht verfügbar'
+      return 'Server nicht verfügbar - Startet möglicherweise gerade'
     case 504:
-      return 'Server-Zeitüberschreitung - Bitte später erneut versuchen'
+      return 'Server antwortet nicht - Bitte erneut versuchen'
     default:
       return `HTTP-Fehler: ${status}`
   }
 }
 
-// Health check API
+// Health check API (used by serverStatus store)
 export const healthApi = {
   check: async (): Promise<boolean> => {
     try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 65000)
+
       const response = await fetch(`${API_BASE}/health`, {
         method: 'GET',
-        // Long timeout for cold starts on Render
-        signal: AbortSignal.timeout(60000)
+        signal: controller.signal
       })
+
+      clearTimeout(timeoutId)
       return response.ok
     } catch {
       return false
